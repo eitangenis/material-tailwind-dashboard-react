@@ -108,7 +108,7 @@ export const statisticsChartsData = [
   {
     color: "white",
     title: "Website View",
-    description: "Last Campaign Performance Graph",
+    description: "Last Campaign Performance Graph2",
     footer: "campaign sent 2 days ago",
     chart: websiteViewsChart,
   },
