@@ -8,6 +8,7 @@ import {
 } from "@heroicons/react/24/solid";
 import { Home, Profile, Tables, Notifications, PaidPlans, Simulation } from "@/pages/dashboard";
 import { SignIn, SignUp } from "@/pages/auth";
+import { EyeIcon, GiftIcon } from "@heroicons/react/24/outline";
 
 
 
@@ -45,13 +46,13 @@ export const routes = [
         element: <Notifications />,
       },
   { 
-        icon: <InformationCircleIcon {...icon} />,
+        icon: <GiftIcon {...icon} />,
         name: "paidplans",
         path: "/paidplans",
         element: <PaidPlans />,
       },
 { 
-        icon: <InformationCircleIcon {...icon} />,
+        icon: <EyeIcon {...icon} />,
         name: "simulation",
         path: "/simulation",
         element: <Simulation />,
