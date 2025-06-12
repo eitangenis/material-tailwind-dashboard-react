@@ -6,7 +6,7 @@ import {
   ServerStackIcon,
   RectangleStackIcon,
 } from "@heroicons/react/24/solid";
-import { Home, Profile, Tables, Notifications, PaidPlans } from "@/pages/dashboard";
+import { Home, Profile, Tables, Notifications, PaidPlans, Simulation } from "@/pages/dashboard";
 import { SignIn, SignUp } from "@/pages/auth";
 
 
@@ -50,7 +50,12 @@ export const routes = [
         path: "/paidplans",
         element: <PaidPlans />,
       },
-
+{ 
+        icon: <InformationCircleIcon {...icon} />,
+        name: "simulation",
+        path: "/simulation",
+        element: <Simulation />,
+      },
     ],
   },
   {
