@@ -5,15 +5,13 @@ import {
   InformationCircleIcon,
   ServerStackIcon,
   RectangleStackIcon,
-<<<<<<< HEAD
   CogIcon,
-} from "@heroicons/react/24/solid";
-import { Home, Profile, Tables, Notifications, PaidPlans, Simulation , MoleculeViewer} from "@/pages/dashboard";
-=======
   BeakerIcon,
 } from "@heroicons/react/24/solid";
-import { Home, Profile, Tables, Notifications, PaidPlans, Simulation, MoleculeViewer } from "@/pages/dashboard";
->>>>>>> b1ff7a7ce55748d053ac17f3aaf8b7c152c9b25c
+import { Home, Profile, Tables, Notifications, PaidPlans, Simulation , MoleculeViewer} from "@/pages/dashboard";
+
+
+
 import { SignIn, SignUp } from "@/pages/auth";
 import { EyeIcon, GiftIcon } from "@heroicons/react/24/outline";
 
@@ -65,7 +63,7 @@ export const routes = [
       },
 
       { 
-        icon: <CogIcon {...icon} />,
+        icon: <BeakerIcon {...icon} />,
         name: "molecule viewer",
         path: "/moleculeviewer",
         element: <MoleculeViewer />,
