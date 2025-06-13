@@ -1,15 +1,4 @@
 import React, { useState, useRef } from "react";
-import {
-  Card,
-  CardHeader,
-  CardBody,
-  Typography,
-  Avatar,
-  Input,
-  Checkbox,
-  Button  
-} from "@material-tailwind/react";
-
 
 export function Simulation() {
   // State for predictor input
@@ -299,11 +288,8 @@ export function Simulation() {
 
   return (
     <div id="root">
-       <Card>
-
-            <CardBody className="overflow-x-scroll px-0 pt-0 pb-2">
-         
-   <div id="predictor">
+      {/* Predictor Section */}
+      <div id="predictor">
         <h1 className="page-title">DRUG SENSITIVITY PREDICTOR</h1>
         <div className="predictor-container">
           <div className="predictor-header">
@@ -317,25 +303,16 @@ export function Simulation() {
               <label htmlFor="smilesInput" className="input-label">
                 <i className="fas fa-molecule"></i> Enter SMILES String:
               </label>
-              <Input
-                            size="lg"
-                            placeholder="e.g., CN1C=NC2=C1C(=O)N(C(=O)N2C)C"
-                            className=" !border-t-blue-gray-200 focus:!border-t-gray-900"
-                            labelProps={{
-                              className: "before:content-none after:content-none",
-                            }}
-                             value={smilesInput}
-                            onChange={(e) => setSmilesInput(e.target.value)}
-                          />
-              {/* <input
+              ------------------------------
+              <input
                 type="text"
                 id="smilesInput"
-                className="smiles-input"
+                className=" !border-t-blue-gray-200 focus:!border-t-gray-900"
                 placeholder="e.g., CN1C=NC2=C1C(=O)N(C(=O)N2C)C"
                 autoComplete="off"
                 value={smilesInput}
                 onChange={(e) => setSmilesInput(e.target.value)}
-              /> */}
+              />
             </div>
             <div className="example-smiles">
               <h4>
@@ -391,11 +368,6 @@ export function Simulation() {
           </div>
         </div>
       </div>
-
-              
-            </CardBody>
-          </Card>
-   
 
       {/* Viewer Section */}
       <div id="viewer">
