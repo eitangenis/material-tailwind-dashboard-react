@@ -12,7 +12,6 @@ import { SignIn, SignUp } from "@/pages/auth";
 import { EyeIcon, GiftIcon } from "@heroicons/react/24/outline";
 
 
-
 const icon = {
   className: "w-5 h-5 text-inherit",
 };
