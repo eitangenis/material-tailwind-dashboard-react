@@ -14,9 +14,7 @@ import {
   Spinner,
 } from "@material-tailwind/react";
 import { PlayIcon, BeakerIcon } from "@heroicons/react/24/outline";
-import MoleculeViewer from "./molecule-viewer";
-
-const API_BASE_URL = "http://152.42.134.22:5000";
+import { MoleculeViewer } from "@/pages/dashboard/molecule-viewer";
 
 export function Simulation() {
   const [activeTab, setActiveTab] = useState("predictor");
@@ -27,13 +25,17 @@ export function Simulation() {
   const [error, setError] = useState("");
   const [result, setResult] = useState(null);
 
+  // Make sure we use the same protocol (http vs https)
+  const API_BASE =
+    `${window.location.protocol}//152.42.134.22:5000`;
+
   const examples = [
     { name: "Caffeine", smiles: "CN1C=NC2=C1C(=O)N(C(=O)N2C)C" },
     { name: "Ibuprofen", smiles: "CC(C)CC1=CC=C(C=C1)C(C)C(=O)O" },
     { name: "Celecoxib", smiles: "CC1=CC=C(C=C1)C2=CC(=NN2C3=CC=C(C=C3)S(=O)(=O)N)C(F)(F)F" },
   ];
 
-  async function predictSensitivity() {
+  async function predict() {
     const s = smiles.trim();
     if (!s) {
       setError("Please enter a SMILES string.");
@@ -43,30 +45,31 @@ export function Simulation() {
     setLoading(true);
     setError("");
     try {
-      const res = await fetch(`${API_BASE_URL}/predict`, {
+      const resp = await fetch(`${API_BASE}/predict`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ smiles: s }),
         mode: "cors",
+        body: JSON.stringify({ smiles: s }),
       });
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error(err.error || res.statusText);
+      if (!resp.ok) {
+        const body = await resp.json().catch(() => ({}));
+        throw new Error(body.error || `${resp.status} ${resp.statusText}`);
       }
-      const data = await res.json();
+      const data = await resp.json();
       if (data.status !== "success") {
         throw new Error("Prediction failed. Check your SMILES string.");
       }
       setResult(data);
     } catch (e) {
-      setError(e.message);
+      console.error("Predict error:", e);
+      setError(`Network/CORS error: ${e.message}`);
       setResult(null);
     } finally {
       setLoading(false);
     }
   }
 
-  const getCategoryColor = (cat) => {
+  const colorClass = (cat) => {
     const c = cat.toLowerCase();
     if (c.includes("high")) return "text-green-600";
     if (c.includes("moderate")) return "text-yellow-600";
@@ -108,9 +111,7 @@ export function Simulation() {
                       label="SMILES string"
                       value={smiles}
                       onChange={(e) => setSmiles(e.target.value)}
-                      onKeyDown={(e) =>
-                        e.key === "Enter" && predictSensitivity()
-                      }
+                      onKeyDown={(e) => e.key === "Enter" && predict()}
                     />
                   </div>
                   <div className="flex flex-wrap gap-3">
@@ -129,7 +130,7 @@ export function Simulation() {
                     <Button
                       color="blue"
                       size="md"
-                      onClick={predictSensitivity}
+                      onClick={predict}
                       disabled={loading}
                       className="flex items-center gap-2"
                     >
@@ -153,13 +154,13 @@ export function Simulation() {
                   {result && (
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 pt-4">
                       <Card className="p-4">
-                        <Typography variant="h6">IC50 Prediction</Typography>
+                        <Typography variant="h6">IC50</Typography>
                         <Typography variant="h4" className="mt-2">
                           {result.prediction.ic50_prediction.toFixed(3)} μM
                         </Typography>
                       </Card>
                       <Card className="p-4">
-                        <Typography variant="h6">Sensitivity Score</Typography>
+                        <Typography variant="h6">Score</Typography>
                         <Typography variant="h4" className="mt-2">
                           {result.prediction.sensitivity_score.toFixed(4)}
                         </Typography>
@@ -168,7 +169,7 @@ export function Simulation() {
                         <Typography variant="h6">Category</Typography>
                         <Typography
                           variant="h4"
-                          className={`mt-2 ${getCategoryColor(
+                          className={`mt-2 ${colorClass(
                             result.prediction.sensitivity_category
                           )}`}
                         >
@@ -179,7 +180,6 @@ export function Simulation() {
                   )}
                 </div>
               </TabPanel>
-
               <TabPanel value="viewer" className="p-0 pt-6">
                 <MoleculeViewer />
               </TabPanel>
