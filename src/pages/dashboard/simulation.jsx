@@ -1,477 +1,192 @@
-import React, { useState, useRef } from "react";
+import React, { useState } from "react";
 import {
   Card,
   CardHeader,
   CardBody,
   Typography,
-  Avatar,
   Input,
-  Checkbox,
-  Button  
+  Button,
+  Tabs,
+  TabsHeader,
+  TabsBody,
+  Tab,
+  TabPanel,
+  Spinner,
 } from "@material-tailwind/react";
+import { PlayIcon, BeakerIcon } from "@heroicons/react/24/outline";
+import MoleculeViewer from "./molecule-viewer";
 
+const API_BASE_URL = "http://152.42.134.22:5000";
 
 export function Simulation() {
-  // State for predictor input
-  const [smilesInput, setSmilesInput] = useState("");
-  // State for viewer input
-  const [viewerSmiles, setViewerSmiles] = useState("CCO");
-  const moleculeViewerRef = useRef(null);
+  const [activeTab, setActiveTab] = useState("predictor");
 
-  // Example click handlers
-  //const setPredictorSMILES = (smiles) => setSmilesInput(smiles);
-  //const setViewerSMILES = (smiles) => setViewerSmiles(smiles);
+  // Predictor state
+  const [smiles, setSmiles] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [result, setResult] = useState(null);
 
-  // Placeholder for visualization logic
-//   const visualizeMolecule = () => {
-//     // TODO: Integrate RDKit.js or your visualization logic here
-//     alert(`Visualizing: ${viewerSmiles}`);
-//   };
+  const examples = [
+    { name: "Caffeine", smiles: "CN1C=NC2=C1C(=O)N(C(=O)N2C)C" },
+    { name: "Ibuprofen", smiles: "CC(C)CC1=CC=C(C=C1)C(C)C(=O)O" },
+    { name: "Celecoxib", smiles: "CC1=CC=C(C=C1)C2=CC(=NN2C3=CC=C(C=C3)S(=O)(=O)N)C(F)(F)F" },
+  ];
 
-  // Placeholder for export logic
-//   const exportSMILES = () => {
-//     // TODO: Implement export logic
-//     alert(`Exporting: ${viewerSmiles}`);
-//   };
-
-  // Placeholder for clear logic
-//   const clearViewer = () => setViewerSmiles("");
-
-  // Placeholder for fullscreen logic
-//   const toggleFullscreen = () => {
-//     // TODO: Implement fullscreen logic
-//     alert("Toggling fullscreen");
-//   };
-
-  // Placeholder for prediction logic
-//   const predictSensitivity = () => {
-//     // TODO: Implement prediction logic
-//     alert(`Predicting for: ${smilesInput}`);
-//   };
-
-   
-       
-    function setViewerSMILES(smiles) {
-        document.getElementById('viewerSmilesInput').value = smiles;
-        document.getElementById('viewerSmilesInput').focus();
+  async function predictSensitivity() {
+    const s = smiles.trim();
+    if (!s) {
+      setError("Please enter a SMILES string.");
+      setResult(null);
+      return;
     }
+    setLoading(true);
+    setError("");
+    try {
+      const res = await fetch(`${API_BASE_URL}/predict`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ smiles: s }),
+        mode: "cors",
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || res.statusText);
+      }
+      const data = await res.json();
+      if (data.status !== "success") {
+        throw new Error("Prediction failed. Check your SMILES string.");
+      }
+      setResult(data);
+    } catch (e) {
+      setError(e.message);
+      setResult(null);
+    } finally {
+      setLoading(false);
+    }
+  }
 
-    // ---- Drug Sensitivity Predictor logic ----
-    const API_BASE_URL = 'http://152.42.134.22:5000';
-
-    function setSMILES(smiles) {
-        document.getElementById('smilesInput').value = smiles;
-        document.getElementById('smilesInput').focus();
-    }
-
-    function showLoading() {
-        document.getElementById('loading').style.display = 'block';
-        document.getElementById('results').style.display = 'none';
-        document.getElementById('error').style.display = 'none';
-        document.getElementById('predictBtn').disabled = true;
-    }
-
-    function hideLoading() {
-        document.getElementById('loading').style.display = 'none';
-        document.getElementById('predictBtn').disabled = false;
-    }
-
-    function showError(message) {
-        document.getElementById('error').style.display = 'block';
-        document.getElementById('errorMessage').textContent = message;
-        document.getElementById('results').style.display = 'none';
-    }
-
-    function showResults(data) {
-        document.getElementById('results').style.display = 'block';
-        document.getElementById('error').style.display = 'none';
-        document.getElementById('ic50Value').textContent = data.prediction.ic50_prediction.toFixed(3);
-        document.getElementById('sensitivityScore').textContent = data.prediction.sensitivity_score.toFixed(4);
-        document.getElementById('sensitivityCategory').textContent = data.prediction.sensitivity_category;
-        document.getElementById('analyzedSmiles').textContent = data.smiles;
-        const categoryElement = document.getElementById('sensitivityCategory');
-        const category = data.prediction.sensitivity_category.toLowerCase();
-        if (category.includes('high')) {
-            categoryElement.style.color = '#28a745';
-        } else if (category.includes('moderate')) {
-            categoryElement.style.color = '#ffc107';
-        } else if (category.includes('low')) {
-            categoryElement.style.color = '#dc3545';
-        }
-    }
-
-    async function predictSensitivity() {
-        const smilesInput = document.getElementById('smilesInput').value.trim();
-        if (!smilesInput) {
-            showError('Please enter a SMILES string');
-            return;
-        }
-        showLoading();
-        try {
-            const response = await fetch(`${API_BASE_URL}/predict`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ smiles: smilesInput }),
-                mode: 'cors'
-            });
-            if (!response.ok) {
-                const errorData = await response.json().catch(() => ({}));
-                throw new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`);
-            }
-            const data = await response.json();
-            if (data.status === 'success') {
-                showResults(data);
-            } else {
-                showError('Prediction failed. Please check your SMILES string and try again.');
-            }
-        } catch (error) {
-            if (error.name === 'TypeError' && error.message.includes('fetch')) {
-                showError('CORS Error: Cannot connect to backend. Please check your server configuration.');
-            } else if (error.message.includes('CORS')) {
-                showError('CORS Error: Please add CORS support to your backend.');
-            } else {
-                showError(`Connection Error: ${error.message}`);
-            }
-        } finally {
-            hideLoading();
-        }
-    }
-
-    document.getElementById('smilesInput')?.addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
-            predictSensitivity();
-        }
-    });
-
-    // --- MOL VIEWER LOGIC ---
-    let viewer3d = null;
-    let RDKit = null;
-    let rdkitReady = false;
-    window.initRDKitModule().then(function(rdkit) {
-        RDKit = rdkit;
-        rdkitReady = true;
-        initializeViewer();
-    }).catch(function(error) {
-        showViewerError('Failed to load RDKit library. Some features may be limited.');
-        initializeViewer();
-    });
-    function initializeViewer() {
-        const viewerElement = document.getElementById('molviewer');
-        if (viewerElement) {
-            viewer3d = $3Dmol.createViewer(viewerElement, {
-                backgroundColor: 'white',
-                antialias: true
-            });
-        }
-    }
-    async function visualizeMolecule() {
-        const smilesInput = document.getElementById('viewerSmilesInput').value.trim();
-        if (!smilesInput) {
-            showViewerError('Please enter a SMILES string to visualize');
-            return;
-        }
-        document.getElementById('visualizeBtn').disabled = true;
-        document.getElementById('visualizeBtn').innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
-        // Try RDKit.js
-        if (rdkitReady && RDKit) {
-            try {
-                const mol = RDKit.get_mol(smilesInput);
-                if (!mol || mol.is_valid() === 0) {
-                    mol?.delete();
-                    throw new Error('Invalid SMILES string');
-                }
-                const molblock = mol.get_molblock();
-                if (!viewer3d) initializeViewer();
-                viewer3d.clear();
-                viewer3d.addModel(molblock, 'sdf');
-                viewer3d.setStyle({}, {
-                    stick: {radius: 0.15, colorscheme: 'default'},
-                    sphere: {scale: 0.25, colorscheme: 'default'}
-                });
-                viewer3d.zoomTo();
-                viewer3d.render();
-                document.getElementById('placeholder').style.display = 'none';
-                mol.delete();
-                document.getElementById('visualizeBtn').disabled = false;
-                document.getElementById('visualizeBtn').innerHTML = '<i class="fas fa-play"></i> Visualize';
-                return;
-            } catch (error) {
-                // RDKit failed, try fallback below
-            }
-        }
-        // Fallback: PubChem API
-        try {
-            const cidResponse = await fetch(`https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/smiles/${encodeURIComponent(smilesInput)}/cids/JSON`);
-            if (!cidResponse.ok) throw new Error('Molecule not found in PubChem');
-            const cidData = await cidResponse.json();
-            const cid = cidData.IdentifierList.CID[0];
-            const sdfResponse = await fetch(`https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/cid/${cid}/SDF?record_type=3d`);
-            if (!sdfResponse.ok) throw new Error('3D structure not available');
-            const sdf = await sdfResponse.text();
-            if (!viewer3d) initializeViewer();
-            viewer3d.clear();
-            viewer3d.addModel(sdf, 'sdf');
-            viewer3d.setStyle({}, {
-                stick: {radius: 0.15, colorscheme: 'default'},
-                sphere: {scale: 0.25, colorscheme: 'default'}
-            });
-            viewer3d.zoomTo();
-            viewer3d.render();
-            document.getElementById('placeholder').style.display = 'none';
-        } catch (error) {
-            // Final fallback: Show error
-            showViewerError('All visualization methods failed. Please check your SMILES string.');
-        } finally {
-            document.getElementById('visualizeBtn').disabled = false;
-            document.getElementById('visualizeBtn').innerHTML = '<i class="fas fa-play"></i> Visualize';
-        }
-    }
-    function showViewerError(message) {
-        document.getElementById('placeholder').style.display = 'block';
-        document.getElementById('placeholder').innerHTML = `
-            <i class="fas fa-exclamation-triangle" style="color: #dc3545; font-size: 48px; margin-bottom: 15px;"></i>
-            <p style="color: #dc3545; font-weight: 600;">${message}</p>
-            <small style="color: #666;">Please check your SMILES string and try again</small>
-        `;
-    }
-    function exportSMILES() {
-        const smilesInput = document.getElementById('viewerSmilesInput').value.trim();
-        if (!smilesInput) {
-            alert('No SMILES string to export. Please enter a molecule first.');
-            return;
-        }
-        const blob = new Blob([smilesInput], { type: 'text/plain' });
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'molecule.smi';
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        window.URL.revokeObjectURL(url);
-    }
-    function clearViewer() {
-        document.getElementById('viewerSmilesInput').value = '';
-        document.getElementById('placeholder').style.display = 'block';
-        document.getElementById('placeholder').innerHTML = `
-            <i class="fas fa-atom"></i>
-            <p>Enter a SMILES string and click "Visualize" to view the 3D molecule</p>
-            <small>Powered by RDKit.js for accurate molecular structure generation</small>
-        `;
-        if (viewer3d) {
-            viewer3d.clear();
-            viewer3d.render();
-        }
-    }
-    const toggleFullscreen = () => {
-        const viewerElement = moleculeViewerRef.current;
-        if (!viewerElement) return;
-        if (!document.fullscreenElement) {
-            viewerElement.requestFullscreen().then(() => {
-            viewerElement.style.position = 'fixed';
-            viewerElement.style.top = '0';
-            viewerElement.style.left = '0';
-            viewerElement.style.width = '100vw';
-            viewerElement.style.height = '100vh';
-            viewerElement.style.zIndex = '9999';
-            viewerElement.style.background = 'white';
-            // Optionally trigger a resize/render on your 3D viewer here
-            });
-        } else {
-            document.exitFullscreen().then(() => {
-            viewerElement.style.position = '';
-            viewerElement.style.top = '';
-            viewerElement.style.left = '';
-            viewerElement.style.width = '';
-            viewerElement.style.height = '';
-            viewerElement.style.zIndex = '';
-            viewerElement.style.background = '';
-            // Optionally trigger a resize/render on your 3D viewer here
-            });
-        }
-        };
-    document.getElementById('viewerSmilesInput')?.addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
-            visualizeMolecule();
-        }
-    });
-
+  const getCategoryColor = (cat) => {
+    const c = cat.toLowerCase();
+    if (c.includes("high")) return "text-green-600";
+    if (c.includes("moderate")) return "text-yellow-600";
+    if (c.includes("low")) return "text-red-600";
+    return "";
+  };
 
   return (
-    <div id="root">
-       <Card>
-
-            <CardBody className="overflow-x-scroll px-0 pt-0 pb-2">
-         
-   <div id="predictor">
-        <h1 className="page-title">DRUG SENSITIVITY PREDICTOR</h1>
-        <div className="predictor-container">
-          <div className="predictor-header">
-            <h2>
-              <i className="fas fa-microscope"></i> Glioblastoma Drug Sensitivity Predictor
-            </h2>
-            <p>Predict drug sensitivity using SMILES molecular representation</p>
-          </div>
-          <div className="predictor-content">
-            <div className="input-group">
-              <label htmlFor="smilesInput" className="input-label">
-                <i className="fas fa-molecule"></i> Enter SMILES String:
-              </label>
-              <Input
-                            size="lg"
-                            placeholder="e.g., CN1C=NC2=C1C(=O)N(C(=O)N2C)C"
-                            className=" !border-t-blue-gray-200 focus:!border-t-gray-900"
-                            labelProps={{
-                              className: "before:content-none after:content-none",
-                            }}
-                             value={smilesInput}
-                            onChange={(e) => setSmilesInput(e.target.value)}
-                          />
-              {/* <input
-                type="text"
-                id="smilesInput"
-                className="smiles-input"
-                placeholder="e.g., CN1C=NC2=C1C(=O)N(C(=O)N2C)C"
-                autoComplete="off"
-                value={smilesInput}
-                onChange={(e) => setSmilesInput(e.target.value)}
-              /> */}
-            </div>
-            <div className="example-smiles">
-              <h4>
-                <i className="fas fa-lightbulb"></i> Example SMILES (click to use):
-              </h4>
-              <div className="example-item" onClick={() => setPredictorSMILES('CN1C=NC2=C1C(=O)N(C(=O)N2C)C')}>
-                <strong>Caffeine:</strong> CN1C=NC2=C1C(=O)N(C(=O)N2C)C
-              </div>
-              <div className="example-item" onClick={() => setPredictorSMILES('CC(C)CC1=CC=C(C=C1)C(C)C(=O)O')}>
-                <strong>Ibuprofen:</strong> CC(C)CC1=CC=C(C=C1)C(C)C(=O)O
-              </div>
-              <div className="example-item" onClick={() => setPredictorSMILES('CC1=CC=C(C=C1)C2=CC(=NN2C3=CC=C(C=C3)S(=O)(=O)N)C(F)(F)F')}>
-                <strong>Celecoxib:</strong> CC1=CC=C(C=C1)C2=CC(=NN2C3=CC=C(C=C3)S(=O)(=O)N)C(F)(F)F
-              </div>
-            </div>
-            <button id="predictBtn" className="predict-btn" onClick={predictSensitivity}>
-              <i className="fas fa-brain"></i> Predict Drug Sensitivity
-            </button>
-            <div id="loading" className="loading" style={{ display: "none" }}>
-              <div className="spinner"></div>
-              <p>Analyzing molecular structure...</p>
-            </div>
-            <div id="error" className="error" style={{ display: "none" }}>
-              <i className="fas fa-exclamation-triangle"></i>
-              <span id="errorMessage"></span>
-            </div>
-            <div id="results" className="results">
-              <h3>
-                <i className="fas fa-chart-line"></i> Prediction Results
-              </h3>
-              <div className="result-grid">
-                <div className="result-card">
-                  <i className="fas fa-flask"></i>
-                  <h4>IC50 Prediction</h4>
-                  <div className="value" id="ic50Value">-</div>
-                  <small>μM</small>
-                </div>
-                <div className="result-card">
-                  <i className="fas fa-percentage"></i>
-                  <h4>Sensitivity Score</h4>
-                  <div className="value" id="sensitivityScore">-</div>
-                </div>
-                <div className="result-card">
-                  <i className="fas fa-thermometer-half"></i>
-                  <h4>Sensitivity Category</h4>
-                  <div className="value" id="sensitivityCategory">-</div>
-                </div>
-              </div>
-              <div className="smiles-display">
-                <strong>Analyzed SMILES:</strong> <span id="analyzedSmiles">-</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-              
-            </CardBody>
-          </Card>
-   
-
-      {/* Viewer Section */}
-      <div id="viewer">
-        <h1 className="page-title">MOLECULAR VIEWER</h1>
-        <div className="viewer-container">
-          <div className="viewer-card">
-            <div className="viewer-header">
-              <h2>
-                <i className="fas fa-eye"></i> 3D Molecular Visualization with RDKit
-              </h2>
-              <div className="viewer-controls">
-                <button className="control-btn" id="visualizeBtn" onClick={visualizeMolecule}>
-                  <i className="fas fa-play"></i> Visualize
-                </button>
-                <button className="control-btn" onClick={exportSMILES}>
-                  <i className="fas fa-download"></i> Export SMILES
-                </button>
-                <button className="control-btn" onClick={clearViewer}>
-                  <i className="fas fa-trash"></i> Clear
-                </button>
-                <button className="control-btn" onClick={toggleFullscreen}>
-                  <i className="fas fa-expand"></i> Fullscreen
-                </button>
-              </div>
-            </div>
-            <div className="viewer-body">
-              <div className="viewer-input-section">
-                <div className="input-group">
-                  <label htmlFor="viewerSmilesInput" className="input-label">
-                    <i className="fas fa-molecule"></i> Enter SMILES String for Visualization:
-                  </label>
-                  <input
-                    type="text"
-                    id="viewerSmilesInput"
-                    className="smiles-input"
-                    placeholder="e.g., CCO (ethanol), CN1C=NC2=C1C(=O)N(C(=O)N2C)C (caffeine)"
-                    autoComplete="off"
-                    value={viewerSmiles}
-                    onChange={(e) => setViewerSmiles(e.target.value)}
-                  />
-                </div>
-                <div className="example-smiles">
-                  <h4>
-                    <i className="fas fa-lightbulb"></i> Quick Examples:
-                  </h4>
-                  <div className="example-item" onClick={() => setViewerSMILES("CCO")}>
-                    <strong>Ethanol:</strong> CCO
+    <div className="mt-12">
+      <Card>
+        <CardHeader variant="gradient" color="blue" className="mb-4 p-6">
+          <Typography variant="h5" color="white">
+            <BeakerIcon className="inline w-6 h-6 mr-2 -mt-1" />
+            Molecular Simulation
+          </Typography>
+        </CardHeader>
+        <CardBody className="px-6 pb-6">
+          <Tabs value={activeTab}>
+            <TabsHeader>
+              <Tab
+                value="predictor"
+                onClick={() => setActiveTab("predictor")}
+              >
+                Predictor
+              </Tab>
+              <Tab value="viewer" onClick={() => setActiveTab("viewer")}>
+                Viewer
+              </Tab>
+            </TabsHeader>
+            <TabsBody>
+              <TabPanel value="predictor" className="p-0 pt-6">
+                <div className="space-y-6">
+                  <div>
+                    <Typography variant="h6" className="mb-2">
+                      Enter SMILES for Drug Sensitivity
+                    </Typography>
+                    <Input
+                      size="lg"
+                      label="SMILES string"
+                      value={smiles}
+                      onChange={(e) => setSmiles(e.target.value)}
+                      onKeyDown={(e) =>
+                        e.key === "Enter" && predictSensitivity()
+                      }
+                    />
                   </div>
-                  <div className="example-item" onClick={() => setViewerSMILES("CN1C=NC2=C1C(=O)N(C(=O)N2C)C")}>
-                    <strong>Caffeine:</strong> CN1C=NC2=C1C(=O)N(C(=O)N2C)C
+                  <div className="flex flex-wrap gap-3">
+                    {examples.map((ex) => (
+                      <Button
+                        key={ex.name}
+                        size="sm"
+                        variant="outlined"
+                        onClick={() => setSmiles(ex.smiles)}
+                      >
+                        {ex.name}
+                      </Button>
+                    ))}
                   </div>
-                  <div className="example-item" onClick={() => setViewerSMILES("CC(C)CC1=CC=C(C=C1)C(C)C(=O)O")}>
-                    <strong>Ibuprofen:</strong> CC(C)CC1=CC=C(C=C1)C(C)C(=O)O
+                  <div>
+                    <Button
+                      color="blue"
+                      size="md"
+                      onClick={predictSensitivity}
+                      disabled={loading}
+                      className="flex items-center gap-2"
+                    >
+                      {loading ? (
+                        <Spinner className="h-5 w-5" />
+                      ) : (
+                        <PlayIcon className="h-5 w-5" />
+                      )}
+                      Predict
+                    </Button>
                   </div>
+                  {error && (
+                    <Typography
+                      variant="small"
+                      color="red"
+                      className="block"
+                    >
+                      {error}
+                    </Typography>
+                  )}
+                  {result && (
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 pt-4">
+                      <Card className="p-4">
+                        <Typography variant="h6">IC50 Prediction</Typography>
+                        <Typography variant="h4" className="mt-2">
+                          {result.prediction.ic50_prediction.toFixed(3)} μM
+                        </Typography>
+                      </Card>
+                      <Card className="p-4">
+                        <Typography variant="h6">Sensitivity Score</Typography>
+                        <Typography variant="h4" className="mt-2">
+                          {result.prediction.sensitivity_score.toFixed(4)}
+                        </Typography>
+                      </Card>
+                      <Card className="p-4">
+                        <Typography variant="h6">Category</Typography>
+                        <Typography
+                          variant="h4"
+                          className={`mt-2 ${getCategoryColor(
+                            result.prediction.sensitivity_category
+                          )}`}
+                        >
+                          {result.prediction.sensitivity_category}
+                        </Typography>
+                      </Card>
+                    </div>
+                  )}
                 </div>
-              </div>
-              <div className="viewer-content" id="moleculeViewer" ref={moleculeViewerRef}>
-                <div className="molecule-placeholder" id="placeholder">
-                  <i className="fas fa-atom"></i>
-                  <p>Enter a SMILES string and click "Visualize" to view the 3D molecule</p>
-                  <small>Powered by RDKit.js for accurate molecular structure generation</small>
-                </div>
-                <div id="molviewer"></div>
-              </div>
-              <div className="viewer-info">
-                <h4>
-                  <i className="fas fa-info-circle"></i> About the Molecular Viewer
-                </h4>
-                <p>
-                  This viewer uses RDKit.js to convert SMILES strings into accurate 3D molecular structures. The same SMILES string will always generate the same 3D conformation, ensuring consistency. You can rotate, zoom, and interact with the molecules in real-time.
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+              </TabPanel>
+
+              <TabPanel value="viewer" className="p-0 pt-6">
+                <MoleculeViewer />
+              </TabPanel>
+            </TabsBody>
+          </Tabs>
+        </CardBody>
+      </Card>
     </div>
   );
 }
