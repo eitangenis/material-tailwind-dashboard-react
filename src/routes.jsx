@@ -5,8 +5,9 @@ import {
   InformationCircleIcon,
   ServerStackIcon,
   RectangleStackIcon,
+  BeakerIcon,
 } from "@heroicons/react/24/solid";
-import { Home, Profile, Tables, Notifications, PaidPlans, Simulation } from "@/pages/dashboard";
+import { Home, Profile, Tables, Notifications, PaidPlans, Simulation, MoleculeViewer } from "@/pages/dashboard";
 import { SignIn, SignUp } from "@/pages/auth";
 import { EyeIcon, GiftIcon } from "@heroicons/react/24/outline";
 
@@ -56,6 +57,12 @@ export const routes = [
         name: "simulation",
         path: "/simulation",
         element: <Simulation />,
+      },
+{ 
+        icon: <BeakerIcon {...icon} />,
+        name: "molecule viewer",
+        path: "/molecule-viewer",
+        element: <MoleculeViewer />,
       },
     ],
   },
