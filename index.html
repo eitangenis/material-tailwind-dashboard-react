@@ -29,6 +29,19 @@
     <script src="https://3dmol.csb.pitt.edu/build/3Dmol-min.js"></script>
     <!-- RDKit.js for proper SMILES parsing -->
     <script src="https://unpkg.com/@rdkit/rdkit/dist/RDKit_minimal.js"></script>
+    
+    <!-- Initialize RDKit -->
+    <script>
+        window.initRDKitModule = function() {
+            return new Promise((resolve, reject) => {
+                if (window.RDKit) {
+                    window.RDKit().then(resolve).catch(reject);
+                } else {
+                    reject(new Error('RDKit not loaded'));
+                }
+            });
+        };
+    </script>
   </head>
   <body>
     <div id="root"></div>
