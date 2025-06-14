@@ -7,11 +7,6 @@ export function Simulation() {
   const [viewerSmiles, setViewerSmiles] = useState("CCO");
   const moleculeViewerRef = useRef(null);
 
- const https = require('https');
-
-  const agent = new https.Agent({
-     rejectUnauthorized: false,
-  });
   // Example click handlers
   //const setPredictorSMILES = (smiles) => setSmilesInput(smiles);
   //const setViewerSMILES = (smiles) => setViewerSmiles(smiles);
