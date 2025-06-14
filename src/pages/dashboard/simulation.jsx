@@ -8,7 +8,7 @@ export function Simulation() {
   const moleculeViewerRef = useRef(null);
 
   // Example click handlers
-  //const setPredictorSMILES = (smiles) => setSmilesInput(smiles);
+  const setPredictorSMILES = (smiles) => setSmilesInput(smiles);
   //const setViewerSMILES = (smiles) => setViewerSmiles(smiles);
 
   // Placeholder for visualization logic
@@ -218,12 +218,15 @@ export function Simulation() {
         }
     }
     function showViewerError(message) {
-        document.getElementById('placeholder').style.display = 'block';
-        document.getElementById('placeholder').innerHTML = `
-            <i class="fas fa-exclamation-triangle" style="color: #dc3545; font-size: 48px; margin-bottom: 15px;"></i>
-            <p style="color: #dc3545; font-weight: 600;">${message}</p>
-            <small style="color: #666;">Please check your SMILES string and try again</small>
-        `;
+        const placeholder = document.getElementById('placeholder');
+        if (placeholder) {
+            placeholder.style.display = 'block';
+            placeholder.innerHTML = `
+              <i class="fas fa-exclamation-triangle" style="color: #dc3545; font-size: 48px; margin-bottom: 15px;"></i>
+              <p style="color: #dc3545; font-weight: 600;">${message}</p>
+              <small style="color: #666;">Please check your SMILES string and try again</small>
+            `;
+          }
     }
     function exportSMILES() {
         const smilesInput = document.getElementById('viewerSmilesInput').value.trim();

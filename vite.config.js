@@ -7,7 +7,7 @@ export default defineConfig({
     alias: [{ find: "@", replacement: "/src" }],
   },
   server: {
-    https: true,
+    https: false,
     proxy: {
       '/api': {
         target: 'https://api.chemtest.tech:5000',
