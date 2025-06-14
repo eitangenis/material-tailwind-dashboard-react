@@ -305,7 +305,7 @@ export function Simulation() {
               <label htmlFor="smilesInput" className="input-label">
                 <i className="fas fa-molecule"></i> Enter SMILES String:
               </label>
-              <br>
+              ------------------------------
               <input
                 type="text"
                 id="smilesInput"
@@ -315,7 +315,6 @@ export function Simulation() {
                 value={smilesInput}
                 onChange={(e) => setSmilesInput(e.target.value)}
               />
-              </br>
             </div>
             <div className="example-smiles">
               <h4>
