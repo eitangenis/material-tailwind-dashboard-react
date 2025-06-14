@@ -7,6 +7,11 @@ export function Simulation() {
   const [viewerSmiles, setViewerSmiles] = useState("CCO");
   const moleculeViewerRef = useRef(null);
 
+ const https = require('https');
+
+  const agent = new https.Agent({
+     rejectUnauthorized: false,
+  });
   // Example click handlers
   //const setPredictorSMILES = (smiles) => setSmilesInput(smiles);
   //const setViewerSMILES = (smiles) => setViewerSmiles(smiles);
@@ -44,6 +49,8 @@ export function Simulation() {
         document.getElementById('viewerSmilesInput').value = smiles;
         document.getElementById('viewerSmilesInput').focus();
     }
+
+
 
     // ---- Drug Sensitivity Predictor logic ----
     const API_BASE_URL = 'https://api.chemtest.tech:5000';
@@ -97,7 +104,7 @@ export function Simulation() {
         }
         showLoading();
         try {
-            const response = await fetch(`${API_BASE_URL}/predict`, {
+            const response = await fetch(`/api/predict`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ smiles: smilesInput }),
