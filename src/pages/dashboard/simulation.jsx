@@ -48,7 +48,7 @@ export function Simulation() {
 
 
     // ---- Drug Sensitivity Predictor logic ----
-    const API_BASE_URL = 'https://api.chemtest.tech:5000';
+    const API_BASE_URL = 'https://152.42.134.22:5000';
 
     function setSMILES(smiles) {
         document.getElementById('smilesInput').value = smiles;
@@ -99,10 +99,17 @@ export function Simulation() {
         }
         showLoading();
         try {
-            const response = await fetch(`/api/predict`, {
+    
+            const response = await fetch(`${API_BASE_URL}/predict`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ smiles: smilesInput }),              
+                body: JSON.stringify({ smiles: smilesInput }),
+                mode: 'cors'
+            
+           /* const response = await fetch(`/api/predict`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ smiles: smilesInput }),  */            
             });
             if (!response.ok) {
                 const errorData = await response.json().catch(() => ({}));
