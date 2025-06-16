@@ -48,7 +48,7 @@ export function Simulation() {
 
 
     // ---- Drug Sensitivity Predictor logic ----
-    const API_BASE_URL = 'https://152.42.134.22:5000';
+    const API_BASE_URL = 'http://chemtest.tech:5000';
 
     function setSMILES(smiles) {
         document.getElementById('smilesInput').value = smiles;
