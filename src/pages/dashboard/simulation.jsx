@@ -106,11 +106,10 @@ export function Simulation() {
                 body: JSON.stringify({ smiles: smilesInput }),
                 mode: 'cors'
             
-           /* const response = await fetch(`/api/predict`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ smiles: smilesInput }),  */            
+                      
             });
+
+            
             if (!response.ok) {
                 const errorData = await response.json().catch(() => ({}));
                 throw new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`);
