@@ -5,3 +5,4 @@ export * from "@/pages/dashboard/notifications";
 export * from "@/pages/dashboard/paidplans";
 export * from "@/pages/dashboard/simulation";
 export * from "@/pages/dashboard/moleculeviewer";
+export * from "@/pages/dashboard/molecule2d";

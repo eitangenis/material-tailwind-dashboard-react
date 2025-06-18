@@ -7,8 +7,9 @@ import {
   RectangleStackIcon,
   CogIcon,
   BeakerIcon,
+  Square2StackIcon,
 } from "@heroicons/react/24/solid";
-import { Home, Profile, Tables, Notifications, PaidPlans, Simulation , MoleculeViewer} from "@/pages/dashboard";
+import { Home, Profile, Tables, Notifications, PaidPlans, Simulation , MoleculeViewer, Molecule2D} from "@/pages/dashboard";
 
 
 
@@ -60,13 +61,17 @@ export const routes = [
         name: "simulation",
         path: "/simulation",
         element: <Simulation />,
-      },
-
-      { 
+      },      { 
         icon: <BeakerIcon {...icon} />,
         name: "molecule viewer",
         path: "/moleculeviewer",
         element: <MoleculeViewer />,
+      },
+      { 
+        icon: <Square2StackIcon {...icon} />,
+        name: "2D molecule viewer",
+        path: "/molecule2d",
+        element: <Molecule2D />,
       },
     ],
   },
