@@ -294,9 +294,7 @@ const SimpleMoleculeViewer = ({ modelData, selectedAtomIds = [], onChangeSelecti
       
       // Calculate perpendicular offset for multiple bonds
       const offsetX = (-dy / length) * 4;
-      const offsetY = (dx / length) * 4;
-
-      if (bondOrder === 1) {
+      const offsetY = (dx / length) * 4;      if (bondOrder === 1) {
         return (
           <line
             key={`bond-${index}`}
@@ -304,8 +302,8 @@ const SimpleMoleculeViewer = ({ modelData, selectedAtomIds = [], onChangeSelecti
             y1={sourceNode.y}
             x2={targetNode.x}
             y2={targetNode.y}
-            stroke="#2C2C2C"
-            strokeWidth="2.5"
+            stroke="#000000"
+            strokeWidth="1.2"
             strokeLinecap="round"
           />
         );
@@ -317,8 +315,8 @@ const SimpleMoleculeViewer = ({ modelData, selectedAtomIds = [], onChangeSelecti
               y1={sourceNode.y + offsetY}
               x2={targetNode.x + offsetX}
               y2={targetNode.y + offsetY}
-              stroke="#2C2C2C"
-              strokeWidth="2.5"
+              stroke="#000000"
+              strokeWidth="1.2"
               strokeLinecap="round"
             />
             <line
@@ -326,8 +324,8 @@ const SimpleMoleculeViewer = ({ modelData, selectedAtomIds = [], onChangeSelecti
               y1={sourceNode.y - offsetY}
               x2={targetNode.x - offsetX}
               y2={targetNode.y - offsetY}
-              stroke="#2C2C2C"
-              strokeWidth="2.5"
+              stroke="#000000"
+              strokeWidth="1.2"
               strokeLinecap="round"
             />
           </g>
@@ -340,17 +338,16 @@ const SimpleMoleculeViewer = ({ modelData, selectedAtomIds = [], onChangeSelecti
               y1={sourceNode.y}
               x2={targetNode.x}
               y2={targetNode.y}
-              stroke="#2C2C2C"
-              strokeWidth="2.5"
+              stroke="#000000"
+              strokeWidth="1.2"
               strokeLinecap="round"
-            />
-            <line
+            />            <line
               x1={sourceNode.x + offsetX * 1.2}
               y1={sourceNode.y + offsetY * 1.2}
               x2={targetNode.x + offsetX * 1.2}
               y2={targetNode.y + offsetY * 1.2}
-              stroke="#2C2C2C"
-              strokeWidth="2.5"
+              stroke="#000000"
+              strokeWidth="1.2"
               strokeLinecap="round"
             />
             <line
@@ -358,8 +355,8 @@ const SimpleMoleculeViewer = ({ modelData, selectedAtomIds = [], onChangeSelecti
               y1={sourceNode.y - offsetY * 1.2}
               x2={targetNode.x - offsetX * 1.2}
               y2={targetNode.y - offsetY * 1.2}
-              stroke="#2C2C2C"
-              strokeWidth="2.5"
+              stroke="#000000"
+              strokeWidth="1.2"
               strokeLinecap="round"
             />
           </g>
@@ -369,71 +366,41 @@ const SimpleMoleculeViewer = ({ modelData, selectedAtomIds = [], onChangeSelecti
       return null;
     });
   };
-
   return (
-    <div className="molecule-2d-viewer bg-white border border-gray-300 rounded-lg overflow-hidden">
+    <div className="molecule-2d-viewer bg-white border-0 rounded-lg overflow-hidden">
       <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} className="w-full h-full">
-        {/* Background */}
-        <rect width={width} height={height} fill="#FAFAFA" />
-        
-        {/* Render bonds first (behind atoms) */}
+        {/* Pure white background */}
+        <rect width={width} height={height} fill="#FFFFFF" />
+        {/* Render bonds */}
         {renderBonds()}
-        
-        {/* Render atoms */}
+        {/* Render atoms - only heteroatom labels */}
         {positionedNodes.map((node) => {
           const isSelected = selectedAtomIds.includes(node.id);
           const atomSymbol = node.atom || 'C';
           const element = atomSymbol.replace(/\d+/g, '').trim();
-          const atomColor = getAtomColor(atomSymbol);
-          const atomRadius = getAtomRadius(atomSymbol);
-          const showLabel = element !== 'C' || atomSymbol.length > 1;
-          
+          const showLabel = element !== 'C';
           return (
-            <g
-              key={node.id}
-              className="molecule-atom cursor-pointer hover:opacity-80"
-              onClick={() => handleAtomClick(node.id)}
-            >
-              {/* Selection ring */}
+            <g key={node.id} className="molecule-atom cursor-pointer" onClick={() => handleAtomClick(node.id)}>
               {isSelected && (
                 <circle
                   cx={node.x}
                   cy={node.y}
-                  r={atomRadius + 6}
+                  r="15"
                   fill="none"
-                  stroke="#FF6B6B"
-                  strokeWidth="3"
-                  strokeDasharray="5,3"
+                  stroke="#0066CC"
+                  strokeWidth="2"
+                  strokeDasharray="3,3"
                 />
               )}
-              
-              {/* Atom sphere with gradient for 3D effect */}
-              <defs>
-                <radialGradient id={`gradient-${node.id}`} cx="30%" cy="30%">
-                  <stop offset="0%" stopColor={atomColor} stopOpacity="1" />
-                  <stop offset="100%" stopColor={atomColor} stopOpacity="0.8" />
-                </radialGradient>
-              </defs>
-              
-              <circle
-                cx={node.x}
-                cy={node.y}
-                r={atomRadius}
-                fill={`url(#gradient-${node.id})`}
-                stroke="#1A1A1A"
-                strokeWidth="1.5"
-              />
-              
-              {/* Atom label */}
               {showLabel && (
                 <text
                   x={node.x}
-                  y={node.y + 4}
+                  y={node.y + 5}
                   textAnchor="middle"
-                  fontSize="11"
-                  fontWeight="bold"
+                  fontSize="16"
+                  fontWeight="normal"
                   fontFamily="Arial, sans-serif"
-                  fill={atomColor === '#FFFFFF' || atomColor === '#FFFF30' ? '#000000' : '#FFFFFF'}
+                  fill="#000000"
                   pointerEvents="none"
                 >
                   {element}

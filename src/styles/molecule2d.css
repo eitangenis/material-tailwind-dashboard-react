@@ -1,67 +1,47 @@
-/* Enhanced Molecule 2D Viewer Styles */
+/* Minimal mcule.com style for molecule viewer */
 .molecule-2d-viewer {
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-  border: 2px solid #e1e8ed;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
-  transition: all 0.3s ease;
+  background: #fff !important;
+  border: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  overflow: visible;
+  transition: none;
 }
 
 .molecule-2d-viewer:hover {
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+  box-shadow: none !important;
 }
 
 .molecule-atom {
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: none;
 }
 
 .molecule-atom:hover {
-  transform: scale(1.1);
-  filter: brightness(1.1);
+  transform: none !important;
+  filter: none !important;
 }
 
 .molecule-atom.selected {
-  filter: drop-shadow(0 0 8px rgba(255, 107, 107, 0.8));
+  filter: none !important;
 }
 
 /* Bond styles */
 .molecule-bond {
-  transition: stroke-width 0.2s ease;
+  transition: none;
 }
 
 .molecule-bond:hover {
-  stroke-width: 3px !important;
+  stroke-width: 1.2px !important;
 }
 
 /* Atom label enhancements */
 .atom-label {
-  font-family: 'Segoe UI', 'Arial', sans-serif;
-  font-size: 11px;
-  font-weight: 700;
+  font-family: Arial, sans-serif;
+  font-size: 16px;
+  font-weight: normal;
   pointer-events: none;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
-}
-
-/* Selection ring animation */
-@keyframes pulse-ring {
-  0% {
-    stroke-opacity: 1;
-    stroke-width: 3px;
-  }
-  50% {
-    stroke-opacity: 0.5;
-    stroke-width: 5px;
-  }
-  100% {
-    stroke-opacity: 1;
-    stroke-width: 3px;
-  }
-}
-
-.molecule-atom.selected circle:last-child {
-  animation: pulse-ring 2s infinite ease-in-out;
+  text-shadow: none;
 }
 
 /* Chemical element specific styling */

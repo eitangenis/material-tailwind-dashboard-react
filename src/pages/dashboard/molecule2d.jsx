@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   Card,
   CardHeader,
@@ -21,17 +21,20 @@ import {
   BeakerIcon,
   Square2StackIcon,
   InformationCircleIcon,
+  PencilSquareIcon,
 } from "@heroicons/react/24/outline";
 import SimpleMoleculeViewer from "../../components/SimpleMoleculeViewer";
+import ProfessionalMoleculeViewer from "../../components/ProfessionalMoleculeViewer";
+import MoleculeDrawer from "../../components/MoleculeDrawer";
 
 export function Molecule2D() {
   const [smilesInput, setSmilesInput] = useState("CCO");
   const [currentSmiles, setCurrentSmiles] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
-  const [activeTab, setActiveTab] = useState("visualizer");
-  const [selectedAtomIds, setSelectedAtomIds] = useState([]);
+  const [activeTab, setActiveTab] = useState("visualizer");  const [selectedAtomIds, setSelectedAtomIds] = useState([]);
   const [moleculeData, setMoleculeData] = useState(null);
+  const [drawnMolecule, setDrawnMolecule] = useState(null);
 
   // For now, just use the fallback SimpleMoleculeViewer since molecule-2d-for-react has compatibility issues
   const Molecule2dComponent = null;
@@ -231,7 +234,6 @@ export function Molecule2D() {
     setSelectedAtomIds([]);
     setError("");
   };
-
   const downloadStructure = () => {
     if (!moleculeData) return;
     
@@ -244,6 +246,40 @@ export function Molecule2D() {
     linkElement.setAttribute('href', dataUri);
     linkElement.setAttribute('download', exportFileDefaultName);
     linkElement.click();
+  };  const handleDrawnMoleculeChange = useCallback((structure, smiles) => {
+    console.log('Received structure:', structure, 'SMILES:', smiles);
+    const moleculeStructure = {
+      smiles: smiles,
+      moleculeData: structure
+    };
+    setDrawnMolecule(moleculeStructure);
+  }, []);
+  const visualizeDrawnMolecule = () => {
+    if (drawnMolecule && drawnMolecule.smiles) {
+      setSmilesInput(drawnMolecule.smiles);
+      setCurrentSmiles(drawnMolecule.smiles);
+      if (drawnMolecule.moleculeData) {
+        setMoleculeData(drawnMolecule.moleculeData);
+      }
+      setActiveTab("visualizer");
+    }
+  };
+
+  const testEthanolSMILES = () => {
+    // Test with ethanol structure
+    const testStructure = {
+      nodes: [
+        { id: 1, atom: 'C', x: 100, y: 100 },
+        { id: 2, atom: 'C', x: 150, y: 100 },
+        { id: 3, atom: 'O', x: 200, y: 100 }
+      ],
+      links: [
+        { id: 1, source: 1, target: 2, bond: 1 },
+        { id: 2, source: 2, target: 3, bond: 1 }
+      ]
+    };
+    const testSmiles = 'CCO';
+    handleDrawnMoleculeChange(testStructure, testSmiles);
   };
 
   return (
@@ -256,11 +292,14 @@ export function Molecule2D() {
             </Typography>
           </CardHeader>
           <CardBody className="overflow-x-scroll px-0 pt-0 pb-2">
-            <Tabs value={activeTab} className="w-full">
-              <TabsHeader className="w-full">
+            <Tabs value={activeTab} className="w-full">              <TabsHeader className="w-full">
                 <Tab value="visualizer" onClick={() => setActiveTab("visualizer")}>
                   <Square2StackIcon className="h-5 w-5 mr-2" />
                   2D Visualizer
+                </Tab>
+                <Tab value="draw" onClick={() => setActiveTab("draw")}>
+                  <PencilSquareIcon className="h-5 w-5 mr-2" />
+                  Draw Molecule
                 </Tab>
                 <Tab value="examples" onClick={() => setActiveTab("examples")}>
                   <BeakerIcon className="h-5 w-5 mr-2" />
@@ -355,56 +394,14 @@ export function Molecule2D() {
                           )}
                         </CardBody>
                       </Card>
-                    </div>
-
-                    {/* Visualization */}
-                    <div className="lg:col-span-2">
-                      <Card className="h-fit">
-                        <CardHeader variant="gradient" color="green" className="mb-4 p-4">
-                          <Typography variant="h6" color="white">
-                            2D Structure Visualization
-                          </Typography>
-                        </CardHeader>
-                        <CardBody>
-                          {error && (
-                            <Alert color="red" className="mb-4">
-                              {error}
-                            </Alert>
-                          )}                          <div className="flex justify-center items-center min-h-[400px] bg-white border-2 border-gray-200 rounded-lg">
-                            {moleculeData ? (
-                              <div className="w-full h-full flex justify-center molecule-2d">
-                                {Molecule2dComponent ? (
-                                  <Molecule2dComponent
-                                    modelData={moleculeData}
-                                    selectedAtomIds={selectedAtomIds}
-                                    onChangeSelection={handleSelectionChange}
-                                    width={600}
-                                    height={400}
-                                  />
-                                ) : (
-                                  <SimpleMoleculeViewer
-                                    modelData={moleculeData}
-                                    selectedAtomIds={selectedAtomIds}
-                                    onChangeSelection={handleSelectionChange}
-                                    width={600}
-                                    height={400}
-                                  />
-                                )}
-                              </div>
-                            ) : (
-                              <div className="text-center text-gray-500">
-                                <BeakerIcon className="h-16 w-16 mx-auto mb-4 text-gray-300" />
-                                <Typography variant="h6" className="mb-2">
-                                  No molecule loaded
-                                </Typography>
-                                <Typography variant="small">
-                                  Enter a SMILES string and click "Visualize" to see the 2D structure
-                                </Typography>
-                              </div>
-                            )}
-                          </div>
-                        </CardBody>
-                      </Card>
+                    </div>                    {/* 2D Structure Viewer */}
+                    <div className="lg:col-span-2 flex items-center justify-center">
+                      <ProfessionalMoleculeViewer 
+                        smiles={currentSmiles || smilesInput} 
+                        width={400} 
+                        height={350}
+                        theme="light"
+                      />
                     </div>
                   </div>
                 </TabPanel>
@@ -428,28 +425,103 @@ export function Molecule2D() {
                             {molecule.smiles}
                           </Typography>                          <div className="mt-4 flex justify-center">
                             <div className="w-full h-32 flex justify-center items-center bg-gray-50 rounded molecule-2d">
-                              {Molecule2dComponent ? (
-                                <Molecule2dComponent
-                                  modelData={molecule.data}
-                                  selectedAtomIds={[]}
-                                  onChangeSelection={() => {}}
-                                  width={200}
-                                  height={120}
-                                />
-                              ) : (
-                                <SimpleMoleculeViewer
-                                  modelData={molecule.data}
-                                  selectedAtomIds={[]}
-                                  onChangeSelection={() => {}}
-                                  width={200}
-                                  height={120}
-                                />
-                              )}
+                              <ProfessionalMoleculeViewer
+                                smiles={molecule.smiles}
+                                width={200}
+                                height={120}
+                                theme="light"
+                              />
                             </div>
                           </div>
                         </CardBody>
                       </Card>
-                    ))}
+                    ))}                  </div>
+                </TabPanel>
+
+                <TabPanel value="draw" className="p-6">
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    {/* Drawing Canvas */}
+                    <div>
+                      <Card>
+                        <CardHeader variant="gradient" color="purple" className="mb-4 p-4">
+                          <Typography variant="h6" color="white">
+                            Draw Molecule Structure
+                          </Typography>
+                        </CardHeader>
+                        <CardBody>
+                          <MoleculeDrawer 
+                            onStructureChange={handleDrawnMoleculeChange}
+                            width={500}
+                            height={400}
+                          />
+                        </CardBody>
+                      </Card>
+                    </div>
+
+                    {/* Drawing Info & Controls */}
+                    <div className="space-y-4">
+                      <Card>
+                        <CardHeader variant="gradient" color="blue" className="mb-4 p-4">
+                          <Typography variant="h6" color="white">
+                            Structure Information
+                          </Typography>
+                        </CardHeader>
+                        <CardBody className="space-y-4">
+                          {drawnMolecule && drawnMolecule.smiles ? (
+                            <div>
+                              <Typography className="mb-2 font-medium text-blue-gray-600">
+                                Generated SMILES:
+                              </Typography>
+                              <div className="p-3 bg-gray-50 rounded-lg">
+                                <Typography variant="small" className="font-mono">
+                                  {drawnMolecule.smiles}
+                                </Typography>
+                              </div>
+                                <Button
+                                onClick={visualizeDrawnMolecule}
+                                className="w-full mt-4 flex items-center justify-center gap-2"
+                                color="green"
+                              >
+                                <PlayIcon className="h-4 w-4" />
+                                Visualize in 2D Viewer
+                              </Button>
+                              
+                              <Button
+                                onClick={testEthanolSMILES}
+                                className="w-full mt-2 flex items-center justify-center gap-2"
+                                color="blue"
+                                variant="outlined"
+                              >
+                                Test CCO (Ethanol)
+                              </Button>
+                            </div>
+                          ) : (
+                            <div className="text-center py-8">
+                              <Typography className="text-blue-gray-400">
+                                Draw a molecule structure to see its SMILES representation
+                              </Typography>
+                            </div>
+                          )}
+                        </CardBody>
+                      </Card>
+
+                      <Card>
+                        <CardHeader variant="gradient" color="gray" className="mb-4 p-4">
+                          <Typography variant="h6" color="white">
+                            Drawing Instructions
+                          </Typography>
+                        </CardHeader>
+                        <CardBody>
+                          <div className="space-y-2 text-sm">
+                            <Typography className="font-medium">• Click to add atoms</Typography>
+                            <Typography className="font-medium">• Drag between atoms to create bonds</Typography>
+                            <Typography className="font-medium">• Use element buttons to change atom type</Typography>
+                            <Typography className="font-medium">• Use erase tool to remove atoms/bonds</Typography>
+                            <Typography className="font-medium">• Undo/Redo to manage changes</Typography>
+                          </div>
+                        </CardBody>
+                      </Card>
+                    </div>
                   </div>
                 </TabPanel>
 
