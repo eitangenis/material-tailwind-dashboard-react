@@ -6,6 +6,10 @@ export default defineConfig({
   resolve: {
     alias: [{ find: "@", replacement: "/src" }],
   },
+  define: {
+    'process.env': {},
+    global: 'window',
+  },
   server: {
     https: false,
     proxy: {
