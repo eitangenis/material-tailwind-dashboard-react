@@ -1,22 +1,45 @@
-import React, { useRef } from "react";
-import { Editor } from "ketcher-react";
-import { RemoteStructServiceProvider } from "ketcher-core";
-import "ketcher-react/dist/index.css";
-
-const structServiceProvider = new RemoteStructServiceProvider(
-  "https://lifescience.opensource.epam.com/indigo/service"
-);
+import React, { useEffect, useRef } from "react";
 
 export function Molecule2D() {
-  const editorRef = useRef(null);
+  const containerRef = useRef(null);
+
+  useEffect(() => {
+    // Inject the Ketcher Standalone HTML into the container
+    fetch("/ketcher/index.html")
+      .then((res) => res.text())
+      .then((html) => {
+        if (containerRef.current) {
+          // Extract the body content
+          const bodyMatch = html.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
+          containerRef.current.innerHTML = bodyMatch ? bodyMatch[1] : html;
+
+          // Dynamically load the main JS bundle
+          const script = document.createElement("script");
+          script.src = "/ketcher/static/js/main.7d7d7a03.js";
+          script.async = true;
+          containerRef.current.appendChild(script);
+        }
+      });
+
+    // Add the main CSS
+    const link = document.createElement("link");
+    link.rel = "stylesheet";
+    link.href = "/ketcher/static/css/main.aafe9c71.css";
+    document.head.appendChild(link);
+
+    // Clean up on unmount
+    return () => {
+      document.head.removeChild(link);
+      if (containerRef.current) containerRef.current.innerHTML = "";
+    };
+  }, []);
 
   return (
-    <div style={{ maxWidth: 900, margin: "0 auto", padding: 24 }}>
-      <Editor
-        ref={editorRef}
-        staticResourcesUrl="https://unpkg.com/ketcher-react@3.2.0/dist/"
-        structServiceProvider={structServiceProvider}
-        style={{ height: 600, border: "1px solid #ccc", borderRadius: 8 }}
+    <div style={{ width: "100%", height: "100vh", background: "#f5f5f5" }}>
+      <div
+        ref={containerRef}
+        id="ketcher-container"
+        style={{ width: "100%", height: "100vh", background: "white" }}
       />
     </div>
   );
