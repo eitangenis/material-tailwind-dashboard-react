@@ -4,17 +4,20 @@
   "version": "2.1.0",
   "type": "module",
   "scripts": {
-    "dev": "concurrently \"node stripe-server.cjs\" \"vite\" --names \"stripe,vite\" --prefix-colors \"yellow,blue\"",
+    "dev": "concurrently \"node stripe-server.cjs\" \"node paypal-server.cjs\" \"vite\" --names \"stripe,paypal,vite\" --prefix-colors \"yellow,cyan,blue\"",
     "dev-vite-only": "vite",
     "dev-stripe-only": "node stripe-server.cjs",
+    "dev-paypal-only": "node paypal-server.cjs",
     "build": "vite build",
     "preview": "vite preview",
     "stripe-server": "node stripe-server.cjs",
-    "start:prod": "concurrently \"node stripe-server.cjs\" \"serve -s dist -l 80\""
+    "paypal-server": "node paypal-server.cjs",
+    "start:prod": "concurrently \"node stripe-server.cjs\" \"node paypal-server.cjs\" \"serve -s dist -l 80\""
   },
   "dependencies": {
     "@heroicons/react": "2.0.18",
     "@material-tailwind/react": "2.1.4",
+    "@paypal/agent-toolkit": "^1.8.0",
     "@stripe/stripe-js": "^7.4.0",
     "apexcharts": "3.44.0",
     "axios": "^1.10.0",

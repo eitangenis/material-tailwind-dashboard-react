@@ -8,6 +8,7 @@ import {
   Chip,
   Alert,
   Spinner,
+  ButtonGroup,
 } from "@material-tailwind/react";
 import { CheckIcon, XMarkIcon, CheckCircleIcon } from "@heroicons/react/24/outline";
 import { loadStripe } from '@stripe/stripe-js';
@@ -20,9 +21,11 @@ export function PaidPlans() {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
   const [messageType, setMessageType] = useState(''); // 'success' or 'error'
+  const [paymentProvider, setPaymentProvider] = useState('stripe'); // 'stripe' or 'paypal'
 
-  // Check if Stripe is properly configured
+  // Check if payment providers are properly configured
   const isStripeConfigured = !!import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
+  const isPayPalConfigured = true; // PayPal will check on server side
 
   // Handle toggle change
   const handleToggleChange = () => {
@@ -36,13 +39,15 @@ export function PaidPlans() {
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get('success')) {
       const planName = urlParams.get('plan');
+      const provider = urlParams.get('provider') || 'stripe';
       const selectedPlan = plans.find(p => p.name === planName);
       const credits = selectedPlan?.credits || 50;
       issueSimulationTokens(credits);
-      setMessage('Payment received! Your have successfully subscribed to the plan: ' + planName);
+      setMessage(`Payment received via ${provider.toUpperCase()}! You have successfully subscribed to the plan: ${planName}`);
       setMessageType('success');
     } else if (urlParams.get('canceled')) {
-      setMessage('Payment was canceled. You can try again anytime.');
+      const provider = urlParams.get('provider') || 'stripe';
+      setMessage(`Payment was canceled. You can try again anytime.`);
       setMessageType('error');
     }
   }, []);
@@ -121,10 +126,12 @@ export function PaidPlans() {
       buttonText: 'Purchase',
       buttonColor: 'purple'
     }
-  ];  const handlePlanSelection = async (plan) => {
-    // Check if Stripe is configured
-    if (!isStripeConfigured) {
-      setMessage('Stripe is not configured. Please check the setup instructions.');
+  ];
+
+  const handlePlanSelection = async (plan) => {
+    // Check if payment provider is configured
+    if (paymentProvider === 'stripe' && !isStripeConfigured) {
+      setMessage('Stripe is not configured. Please check the setup instructions or try PayPal.');
       setMessageType('error');
       return;
     }
@@ -145,14 +152,19 @@ export function PaidPlans() {
     setMessage('');
 
     try {
-      const result = await createCheckoutSession(plan, isYearly);
+      let result;
+      if (paymentProvider === 'stripe') {
+        result = await createCheckoutSession(plan, isYearly);
+      } else if (paymentProvider === 'paypal') {
+        result = await createPayPalOrder(plan);
+      }
       
       if (result.error) {
         throw new Error(result.error);
       }
 
       // Redirect to checkout
-      window.location.href = result.url;
+      window.location.href = result.url || result.approvalUrl;
       
     } catch (error) {
       console.error('Error:', error);
@@ -188,6 +200,36 @@ export function PaidPlans() {
       return await response.json();
     } catch (error) {
       console.error('Error creating checkout session:', error);
+      return { error: error.message };
+    }
+  };
+
+  // Helper function to create PayPal order
+  const createPayPalOrder = async (plan) => {
+    try {
+      const token = localStorage.getItem('auth_token');
+      const port = window.location.hostname === 'localhost' ? '3002' : '3002';
+      const protocol = window.location.protocol;
+      const response = await fetch(`${protocol}//${window.location.hostname}:${port}/api/paypal/create-order`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        },
+        body: JSON.stringify({
+          planName: plan.name,
+          price: plan.price
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to create PayPal order');
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Error creating PayPal order:', error);
       return { error: error.message };
     }
   };
@@ -228,17 +270,17 @@ export function PaidPlans() {
   return (
     <div className="min-h-screen bg-gray-50 py-12 px-4">
       <div className="max-w-7xl mx-auto">
-        {/* Stripe Configuration Error */}
-        {!isStripeConfigured && (
+        {/* Payment Configuration Warning */}
+        {!isStripeConfigured && !isPayPalConfigured && (
           <div className="mb-8">
             <Alert
               color="red"
               icon={<XMarkIcon className="h-5 w-5" />}
             >
               <div>
-                <Typography className="font-semibold mb-2">Stripe Not Configured</Typography>
+                <Typography className="font-semibold mb-2">Payment Providers Not Configured</Typography>
                 <Typography className="text-sm">
-                  Stripe payment integration is not properly configured. Please check the STRIPE_SETUP.md file for setup instructions.
+                  Neither Stripe nor PayPal are properly configured. Please check the setup instructions.
                 </Typography>
               </div>
             </Alert>
@@ -269,6 +311,41 @@ export function PaidPlans() {
             advanced computational tools accessible to every researcher and scientist.
           </Typography>
           
+          {/* Payment Provider Selector */}
+          <div className="flex flex-col items-center gap-4 mb-8">
+            <Typography variant="h6" className="text-gray-700">
+              Select Payment Method
+            </Typography>
+            <ButtonGroup variant="outlined">
+              <Button
+                color={paymentProvider === 'stripe' ? 'blue' : 'gray'}
+                onClick={() => setPaymentProvider('stripe')}
+                className={paymentProvider === 'stripe' ? 'bg-blue-500 text-white' : ''}
+                disabled={!isStripeConfigured}
+              >
+                <svg className="w-5 h-5 mr-2 inline" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M13.976 9.15c-2.172-.806-3.356-1.426-3.356-2.409 0-.831.683-1.305 1.901-1.305 2.227 0 4.515.858 6.09 1.631l.89-5.494C18.252.975 15.697 0 12.165 0 9.667 0 7.589.654 6.104 1.872 4.56 3.147 3.757 4.992 3.757 7.218c0 4.039 2.467 5.76 6.476 7.219 2.585.92 3.445 1.574 3.445 2.583 0 .98-.84 1.545-2.354 1.545-1.875 0-4.965-.921-6.99-2.109l-.9 5.555C5.175 22.99 8.385 24 11.714 24c2.641 0 4.843-.624 6.328-1.813 1.664-1.305 2.525-3.236 2.525-5.732 0-4.128-2.524-5.851-6.591-7.305z"/>
+                </svg>
+                Stripe
+              </Button>
+              <Button
+                color={paymentProvider === 'paypal' ? 'blue' : 'gray'}
+                onClick={() => setPaymentProvider('paypal')}
+                className={paymentProvider === 'paypal' ? 'bg-blue-500 text-white' : ''}
+              >
+                <svg className="w-5 h-5 mr-2 inline" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M20.067 8.478c.492.88.556 2.014.3 3.327-.74 3.806-3.276 5.12-6.514 5.12h-.5a.805.805 0 0 0-.794.68l-.04.22-.63 3.993-.028.15a.805.805 0 0 1-.793.68H8.25c-.367 0-.617-.33-.542-.695l1.985-12.591a.992.992 0 0 1 .978-.83h3.153c1.671 0 2.97.34 3.859 1.01a3.205 3.205 0 0 1 1.384 2.936z"/>
+                  <path d="M7.187 3.524l.002-.01c.067-.43.396-.736.828-.736h5.762c1.258 0 2.245.136 3.02.425.73.272 1.33.686 1.782 1.228.452.542.738 1.218.873 2.008.067.393.09.816.069 1.264-.022.448-.09.926-.205 1.437-.74 3.806-3.276 5.12-6.514 5.12h-.5a.805.805 0 0 0-.794.68l-.04.22-.63 3.993-.028.15a.805.805 0 0 1-.793.68H8.25c-.367 0-.617-.33-.542-.695l1.985-12.591a.992.992 0 0 1 .978-.83h.516z"/>
+                </svg>
+                PayPal
+              </Button>
+            </ButtonGroup>
+            {!isStripeConfigured && paymentProvider === 'stripe' && (
+              <Typography className="text-sm text-red-500">
+                Stripe is not configured. Please select PayPal or configure Stripe.
+              </Typography>
+            )}
+          </div>
 
         </div>
 

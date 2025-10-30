@@ -12,9 +12,11 @@ This fork includes additional professional features:
 - Interactive molecule editing and drawing capabilities
 - Export functionality for molecular structures
 
-### 💳 **Stripe Payment Integration**
+### 💳 **Payment Integration (Stripe & PayPal)**
 - Modern pricing page design inspired by pyxis-discover.com
-- Secure Stripe payment processing with pre-built checkout forms
+- Support for both Stripe and PayPal payment processing
+- Flexible payment method selection for users
+- Secure checkout flows with pre-built forms
 - Monthly/yearly billing toggle with "Most Popular" plan highlighting
 - Complete payment flow with success/failure handling
 
@@ -124,21 +126,39 @@ Quick start options:
    cp .env.example .env
    ```
 
-2. Add your Stripe API keys to `.env`:
+2. Add your payment provider API keys to `.env`:
    ```
+   # Stripe
    VITE_STRIPE_PUBLISHABLE_KEY=pk_test_your_publishable_key_here
    STRIPE_SECRET_KEY=sk_test_your_secret_key_here
+   
+   # PayPal
+   PAYPAL_CLIENT_ID=your_paypal_client_id_here
+   PAYPAL_CLIENT_SECRET=your_paypal_client_secret_here
+   PAYPAL_MODE=sandbox
    ```
 
+3. See detailed setup instructions:
+   - **Stripe Setup**: `STRIPE_SETUP.md`
+   - **PayPal Setup**: `PAYPAL_SETUP.md`
+
 ### Development Commands
-- **Start everything**: `npm run dev` (starts both frontend and Stripe server)
+- **Start everything**: `npm run dev` (starts frontend, Stripe, and PayPal servers)
 - **Frontend only**: `npm run build` then `npm run preview`
 - **Stripe server only**: `npm run stripe-server`
+- **PayPal server only**: `npm run paypal-server`
 
 ### Testing Payments
+
+#### Stripe
 - Use Stripe test card: `4242 4242 4242 4242`
 - Any future expiry date and CVC will work
-- Visit `/dashboard/paid-plans` to test the payment flow
+
+#### PayPal
+- Use PayPal Sandbox accounts from your [Developer Dashboard](https://developer.paypal.com/dashboard/)
+- Login with test buyer account to complete test payments
+
+Visit `/dashboard/paid-plans` to test the payment flow with either provider.
 
 ### New Pages Available
 - **Molecule Viewer**: `/dashboard/molecule-viewer` - Professional 2D chemical drawing tool
