@@ -40,7 +40,7 @@ export function Profile() {
       const token = localStorage.getItem('auth_token');
       
       // First, get activity data to extract user info
-      const response = await fetch(`https://${window.location.hostname}:3000/api/activity`, {
+      const response = await fetch(API_CONFIG.buildApiUrl('/activity'), {
         headers: {
           "Content-Type": "application/json",
           ...(token ? { 'Authorization': `Bearer ${token}` } : {})

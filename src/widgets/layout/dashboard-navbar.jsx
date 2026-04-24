@@ -276,7 +276,7 @@ Please contact the customer at ${userEmail} to process this order.
           name: userName,
           subject: `Shopping Cart Enquiry from ${userName}`,
           message: emailMessage,
-          recipientEmail: 'contact@pyxis-discovery.com'
+          recipientEmail: 'contact@outwize.com'
         })
       });
 
@@ -317,7 +317,7 @@ Please contact the customer at ${userEmail} to process this order.
       const token = localStorage.getItem('auth_token');
       
       // Create checkout session
-      const response = await fetch(`https://${window.location.hostname}:3000/create-checkout-session-onetime`, {
+      const response = await fetch(API_CONFIG.buildUrl('/create-checkout-session-onetime'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

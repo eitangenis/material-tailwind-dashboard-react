@@ -9,6 +9,7 @@ import {
   IconButton,
 } from "@material-tailwind/react";
 import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
+import { PUBLIC_LINKS } from "@/configs/public-links";
 
 export function Navbar({ brandName, routes, action }) {
   const [openNav, setOpenNav] = React.useState(false);
@@ -83,10 +84,10 @@ export function Navbar({ brandName, routes, action }) {
 }
 
 Navbar.defaultProps = {
-  brandName: "Pyxis Discovery",
+  brandName: "Outwize",
   action: (
     <a
-      href="https://outwize.tech"
+      href={PUBLIC_LINKS.publicSite}
       target="_blank"
     >
       <Button variant="gradient" size="sm" fullWidth>

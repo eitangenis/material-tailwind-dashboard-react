@@ -1,7 +1,10 @@
 // Utility functions for API calls
 
 // Centralized hostname constant
-export const API_HOSTNAME = 'app.pyxis-discovery.com' //window.location.hostname;
+export const API_HOSTNAME =
+  typeof window !== 'undefined' ? window.location.hostname : 'localhost';
+
+export const API_PORT = import.meta.env.VITE_API_PORT || '3000';
 
 /**
  * Get the appropriate protocol (http/https) based on the current hostname
@@ -16,7 +19,7 @@ export const getApiProtocol = () => {
  */
 export const getApiBaseUrl = () => {
   const protocol = getApiProtocol();
-  return `${protocol}://${API_HOSTNAME}:3000`;
+  return `${protocol}://${API_HOSTNAME}:${API_PORT}`;
 };
 
 /**

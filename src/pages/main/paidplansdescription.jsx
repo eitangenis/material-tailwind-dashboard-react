@@ -10,6 +10,7 @@ import {
   Spinner,
 } from "@material-tailwind/react";
 import { CheckIcon, XMarkIcon, CheckCircleIcon } from "@heroicons/react/24/outline";
+import { API_CONFIG } from "@/utils/constants";
 
 
 export function PaidPlansDescription() {
@@ -172,7 +173,7 @@ export function PaidPlansDescription() {
         'Unlimited users',
         'Unlimited parallel jobs',
         'Custom models, pipelines, visualizations',
-        'Pyxis-discovery Teams',
+        'Outwize-discovery Teams',
         'Contact for pricing'
       ],
       buttonText: 'Contact Us',
@@ -188,7 +189,7 @@ export function PaidPlansDescription() {
   // Helper function to create checkout session
   const createCheckoutSession = async (plan, isYearly) => {
     try {
-      const response = await fetch(`https://${window.location.hostname}:3000/create-checkout-session`, {
+      const response = await fetch(API_CONFIG.buildUrl('/create-checkout-session'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

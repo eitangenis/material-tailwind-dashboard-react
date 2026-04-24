@@ -13,7 +13,7 @@ This fork includes additional professional features:
 - Export functionality for molecular structures
 
 ### 💳 **Stripe Payment Integration**
-- Modern pricing page design inspired by pyxis-discover.com
+- Modern pricing page design inspired by outwize.com
 - Secure Stripe payment processing with pre-built checkout forms
 - Monthly/yearly billing toggle with "Most Popular" plan highlighting
 - Complete payment flow with success/failure handling
@@ -23,6 +23,63 @@ This fork includes additional professional features:
 - Secure environment variable configuration
 - No secrets in repository - all sensitive data in `.env` file
 - Ready for production deployment
+
+## Outwize Unified Stack
+
+This repository now combines the React frontend and the merged backend API into one app, so you only run one project.
+
+### Quick Start (Unified)
+
+1. Install dependencies:
+   ```bash
+   npm install
+   ```
+2. Create your env file:
+   ```bash
+   cp .env.example .env
+   ```
+3. Start frontend + backend together:
+   ```bash
+   npm run dev
+   ```
+
+### Runtime URLs
+
+- Frontend: `http://localhost:5173`
+- Backend API: `http://localhost:3000`
+- API docs: `http://localhost:3000/api-docs`
+
+### Docker
+
+You can run the merged app with Docker Compose:
+
+```bash
+docker compose up --build
+```
+
+Services:
+
+- Frontend (Nginx serving built app): `http://localhost:5173`
+- Backend API: `http://localhost:3000`
+
+The backend reads environment from `.env`, so create it first from `.env.example`.
+
+### Redirect Approval-Ready Feature
+
+The merged app includes approval-ready redirect access endpoints:
+
+- `POST /api/redirect-access/request`
+- `GET /api/redirect-access/verify`
+
+Control mode via env:
+
+- `REDIRECT_APPROVAL_MODE=off` (allow all)
+- `REDIRECT_APPROVAL_MODE=observe` (allow + mark approved/pending)
+- `REDIRECT_APPROVAL_MODE=enforce` (block non-approved origins)
+
+Manage allowed sources with:
+
+- `APPROVED_REDIRECT_ORIGINS=site1.com,site2.com`
 
 ![Image](https://s3.amazonaws.com/creativetim_bucket/products/488/original/material-tailwind-dashboard-react.jpg)
 

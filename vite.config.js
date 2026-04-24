@@ -41,7 +41,7 @@ export default defineConfig({
     },
     proxy: {
       '/api': {
-        target: 'http://127.0.0.1:3001', // Use IPv4 instead of localhost
+        target: 'http://127.0.0.1:3000',
         changeOrigin: true,
         secure: false,
       },

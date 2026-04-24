@@ -1,5 +1,5 @@
 // API Configuration Constants
-import { getApiBaseUrl } from './api.js';
+import { API_HOSTNAME, API_PORT, getApiBaseUrl } from './api.js';
 
 // Utility function to check if running on localhost
 export const isLocalhost = () => {
@@ -15,8 +15,8 @@ export const getAuthToken = () => {
 };
 
 export const API_CONFIG = {
-  hostname: 'app.pyxis-discovery.com',//window.location.hostname,
-  port: '3000',
+  hostname: API_HOSTNAME,
+  port: API_PORT,
   
   // Helper function to build API URLs using the existing api utility
   buildApiUrl: (endpoint) => {

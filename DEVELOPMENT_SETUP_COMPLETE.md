@@ -4,7 +4,7 @@
 
 ### What's Working:
 - ✅ **Vite Development Server**: Running on http://localhost:5173
-- ✅ **Stripe Payment Server**: Running on port 3001
+- ✅ **Unified Backend Server**: Running on port 3000
 - ✅ **Environment Variables**: Properly loaded from `.env` file
 - ✅ **Secure Configuration**: No secrets in the repository
 - ✅ **Unified Development**: Single `npm run dev` command starts everything
@@ -17,11 +17,12 @@ npm run dev
 ```
 This command will:
 - Start the Vite development server (frontend)
-- Start the Stripe payment server (backend)
+- Start the unified backend server (merged from `chem_beo`)
 - Load all environment variables from `.env`
 
 #### Access the Application:
 - **Frontend**: http://localhost:5173
+- **Backend API**: http://localhost:3000
 - **Paid Plans Page**: http://localhost:5173/dashboard/paid-plans
 - **Molecule Viewer**: http://localhost:5173/dashboard/molecule-viewer
 
@@ -32,10 +33,12 @@ This command will:
 
 ### Project Structure:
 ```
+├── backend/
+│   ├── index.js               # Unified API server (auth, simulation, billing, docs)
+│   └── utils/                 # Email, SSL, queue, and helper utilities
 ├── src/pages/dashboard/
 │   ├── paidplans.jsx          # Pricing page with Stripe integration
 │   └── moleculeviewer.jsx     # 2D molecule drawing tool
-├── stripe-server.cjs          # Express server for Stripe payments
 ├── .env                       # Environment variables (not in git)
 ├── .env.example              # Template for environment variables
 ├── package.json              # Scripts and dependencies
@@ -45,7 +48,7 @@ This command will:
 ### Key Features Implemented:
 
 #### 1. Professional Paid Plans Page
-- Modern pricing design inspired by pyxis-discovery.com
+- Modern pricing design inspired by outwize.com
 - Monthly/yearly billing toggle
 - "Most Popular" plan highlighting
 - Feature comparison lists
@@ -77,6 +80,14 @@ Your `.env` file contains:
 ```
 VITE_STRIPE_PUBLISHABLE_KEY=pk_test_...
 STRIPE_SECRET_KEY=sk_test_...
+MONGODB_URI=mongodb://...
+JWT_SECRET=...
+MOLMIM_API_KEY=...
+OPENFOLD_API_KEY=...
+
+# Approval-ready redirect controls
+REDIRECT_APPROVAL_MODE=observe
+APPROVED_REDIRECT_ORIGINS=localhost,127.0.0.1
 ```
 
 ### Next Steps:

@@ -1,12 +1,13 @@
 import React, { useEffect } from "react";
 import { Typography, Card, CardHeader, CardBody, Button } from "@material-tailwind/react";
-import { pyxisImages } from "@/data/pyxisImages";
+import { outwizeImages } from "@/data/outwizeImages";
+import { PUBLIC_LINKS } from "@/configs/public-links";
 
 export function MainHome() {
   // Redirect this route to the public website
   useEffect(() => {
     // Use replace to avoid adding an extra history entry
-    window.location.replace("https://www.pyxis-discovery.com/");
+    window.location.replace(PUBLIC_LINKS.publicSite);
   }, []);
 
   return (
@@ -15,7 +16,7 @@ export function MainHome() {
       <section className="py-16 flex items-center justify-center">
         <div className="text-center">
           <h1 className="text-2xl font-semibold mb-2">Redirecting…</h1>
-          <p className="text-blue-gray-600">Taking you to pyxis-discovery.com</p>
+          <p className="text-blue-gray-600">Taking you to outwize.com</p>
         </div>
       </section>
       {/* The content below will usually not render because of the immediate redirect,
@@ -25,7 +26,7 @@ export function MainHome() {
         className="py-5 text-white d-flex align-items-center justify-content-center"
         style={{
           background:
-            `linear-gradient(rgba(0,0,0,0.5),rgba(0,0,0,0.5)), url('${pyxisImages.hero}') center/cover no-repeat`,
+            `linear-gradient(rgba(0,0,0,0.5),rgba(0,0,0,0.5)), url('${outwizeImages.hero}') center/cover no-repeat`,
           minHeight: 340,
         }}
       >
@@ -39,9 +40,9 @@ export function MainHome() {
 
       {/* Scaffold-based Chemical Space Section */}
       <section className="container py-5">
-        <h2 className="fw-bold mb-4" style={{ fontSize: '3rem' }}>Pyxis embraces the concept of scaffold-based chemical space exploration</h2>
+        <h2 className="fw-bold mb-4" style={{ fontSize: '3rem' }}>Outwize embraces the concept of scaffold-based chemical space exploration</h2>
         <p className="lead text-blue-gray-700 mb-2">
-          This library design approach offers several advantages over alternative methods of chemical space enrichment as it is easy to combine with existing machine learning and statistical modelling algorithms and chemistry process automation. All Pyxis scaffolds are drug-like and synthetically tractable, featuring Fsp3-rich linkers and ring-systems found in known drugs or natural products. The peripheral building blocks can be attached to the core scaffold in a step-by-step fashion using well-validated protocols of parallel chemistry.
+          This library design approach offers several advantages over alternative methods of chemical space enrichment as it is easy to combine with existing machine learning and statistical modelling algorithms and chemistry process automation. All Outwize scaffolds are drug-like and synthetically tractable, featuring Fsp3-rich linkers and ring-systems found in known drugs or natural products. The peripheral building blocks can be attached to the core scaffold in a step-by-step fashion using well-validated protocols of parallel chemistry.
         </p>
       </section>
 
@@ -49,7 +50,7 @@ export function MainHome() {
       <section className="bg-blue-gray-50 py-5">
         <div className="container row align-items-center mb-5 mx-auto">
           <div className="col-lg-6 mb-4 mb-lg-0">
-            <img src={pyxisImages.macrocyclicChemspace} alt="Macrocyclic ChemSpace" className="img-fluid rounded shadow" style={{ maxHeight: 400, objectFit: "cover", width: "100%" }} />
+            <img src={outwizeImages.macrocyclicChemspace} alt="Macrocyclic ChemSpace" className="img-fluid rounded shadow" style={{ maxHeight: 400, objectFit: "cover", width: "100%" }} />
           </div>
           <div className="col-lg-6">
             <ul className="list-unstyled text-blue-gray-700 text-base mb-2">
@@ -71,7 +72,7 @@ export function MainHome() {
       <section className="py-5">
         <div className="container row align-items-center mb-5 flex-row-reverse mx-auto">
           <div className="col-lg-6 mb-4 mb-lg-0">
-            <img src={pyxisImages.cnsMacrocycles} alt="CNS Macrocycles" className="img-fluid rounded shadow" style={{ maxHeight: 400, objectFit: "cover", width: "100%" }} />
+            <img src={outwizeImages.cnsMacrocycles} alt="CNS Macrocycles" className="img-fluid rounded shadow" style={{ maxHeight: 400, objectFit: "cover", width: "100%" }} />
           </div>
           <div className="col-lg-6">
             <p className="lead text-blue-gray-700 mb-2">
@@ -92,7 +93,7 @@ export function MainHome() {
       <section className="bg-blue-gray-50 py-5">
         <div className="container row align-items-center mb-5 mx-auto">
           <div className="col-lg-6 mb-4 mb-lg-0">
-            <img src={pyxisImages.molecularGlues} alt="Molecular Glues" className="img-fluid rounded shadow" style={{ maxHeight: 400, objectFit: "cover", width: "100%" }} />
+            <img src={outwizeImages.molecularGlues} alt="Molecular Glues" className="img-fluid rounded shadow" style={{ maxHeight: 400, objectFit: "cover", width: "100%" }} />
           </div>
           <div className="col-lg-6">
             <p className="lead text-blue-gray-700 mb-2">
@@ -113,7 +114,7 @@ export function MainHome() {
       <section className="py-5">
         <div className="container row align-items-center mb-5 flex-row-reverse mx-auto">
           <div className="col-lg-6 mb-4 mb-lg-0">
-            <img src={pyxisImages.covalentMacrocycles} alt="Covalent Macrocycles" className="img-fluid rounded shadow" style={{ maxHeight: 400, objectFit: "cover", width: "100%" }} />
+            <img src={outwizeImages.covalentMacrocycles} alt="Covalent Macrocycles" className="img-fluid rounded shadow" style={{ maxHeight: 400, objectFit: "cover", width: "100%" }} />
           </div>
           <div className="col-lg-6">
             <h2 className="fw-bold mb-3" style={{ fontSize: '3rem' }}>Macrocycles for Covalent Drug Discovery</h2>
@@ -134,8 +135,8 @@ export function MainHome() {
       <section className="bg-blue-gray-50 py-5">
         <div className="container text-center">
           <h2 className="fw-bold mb-3" style={{ fontSize: '3rem' }}>Looking for advice or a screening partner?</h2>
-          <a href="https://www.pyxis-discovery.com/contact/" target="_blank" rel="noreferrer" className="btn btn-success ms-2" role="button">
-            Contact Pyxis Discovery
+          <a href={PUBLIC_LINKS.contact} target="_blank" rel="noreferrer" className="btn btn-success ms-2" role="button">
+            Contact Outwize
           </a>
         </div>
       </section>

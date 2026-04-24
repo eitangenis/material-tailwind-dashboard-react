@@ -1,6 +1,7 @@
 import PropTypes from "prop-types";
 import { Typography } from "@material-tailwind/react";
 import { HeartIcon } from "@heroicons/react/24/solid";
+import { PUBLIC_LINKS } from "@/configs/public-links";
 
 export function Footer({ brandName, brandLink, routes }) {
   const year = new Date().getFullYear();
@@ -42,12 +43,12 @@ export function Footer({ brandName, brandLink, routes }) {
 
 Footer.defaultProps = {
   brandName: "Outwize inc",
-  brandLink: "https://outwize.tech/",
+  brandLink: PUBLIC_LINKS.publicSite,
   routes: [
-    { name: "Outwize inc", path: "https://outwize.tech/" },
-    { name: "About Us", path: "https://outwize.tech/" },
-    { name: "Blog", path: "https://outwize.tech/blog" },
-    { name: "License", path: "https://outwize.tech//license" },
+    { name: "Outwize inc", path: PUBLIC_LINKS.publicSite },
+    { name: "About Us", path: PUBLIC_LINKS.publicSite },
+    { name: "Blog", path: PUBLIC_LINKS.blog },
+    { name: "License", path: PUBLIC_LINKS.license },
   ],
 };
 

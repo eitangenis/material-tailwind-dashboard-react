@@ -4,13 +4,13 @@
   "version": "2.1.0",
   "type": "module",
   "scripts": {
-    "dev": "concurrently \"node stripe-server.cjs\" \"vite\" --names \"stripe,vite\" --prefix-colors \"yellow,blue\"",
+    "dev": "concurrently \"node backend/index.js\" \"vite\" --names \"backend,vite\" --prefix-colors \"yellow,blue\"",
     "dev-vite-only": "vite",
-    "dev-stripe-only": "node stripe-server.cjs",
+    "dev-backend-only": "node backend/index.js",
     "build": "vite build",
     "preview": "vite preview",
     "stripe-server": "node stripe-server.cjs",
-    "start:prod": "concurrently \"node stripe-server.cjs\" \"serve -s dist -l 80\""
+    "start:prod": "concurrently \"node backend/index.js\" \"serve -s dist -l 80\""
   },
   "dependencies": {
     "@heroicons/react": "2.0.18",
@@ -18,10 +18,13 @@
     "@stripe/stripe-js": "^7.4.0",
     "apexcharts": "3.44.0",
     "axios": "^1.10.0",
+    "bcryptjs": "^3.0.2",
     "cors": "^2.8.5",
     "d3": "^7.9.0",
     "dotenv": "^16.6.1",
     "express": "^5.1.0",
+    "form-data": "^4.0.4",
+    "jsonwebtoken": "^9.0.2",
     "kekule": "^1.0.2",
     "ketcher-core": "^3.2.0",
     "ketcher-react": "^3.2.0",
@@ -29,6 +32,7 @@
     "molecule-2d-for-react": "^0.2.3",
     "molstar": "^4.18.0",
     "mongodb": "^6.17.0",
+    "node-fetch": "^3.3.2",
     "nodemailer": "^7.0.6",
     "prop-types": "15.8.1",
     "react": "18.2.0",
@@ -36,7 +40,11 @@
     "react-dom": "18.2.0",
     "react-router-dom": "6.17.0",
     "smiles-drawer": "^2.1.7",
-    "stripe": "^18.2.1"
+    "stripe": "^18.2.1",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.1",
+    "xlsx": "^0.18.5",
+    "amqplib": "^0.10.9"
   },
   "devDependencies": {
     "@types/react": "18.2.31",

@@ -11,6 +11,7 @@ import {
 } from "@material-tailwind/react";
 import { CheckIcon, XMarkIcon, CheckCircleIcon } from "@heroicons/react/24/outline";
 import { loadStripe } from '@stripe/stripe-js';
+import { API_CONFIG } from "@/utils/constants";
 
 // Initialize Stripe
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
@@ -167,7 +168,7 @@ export function PaidPlans() {
   const createCheckoutSession = async (plan, isYearly) => {
     try {
       const token = localStorage.getItem('auth_token');
-      const response = await fetch(`https://${window.location.hostname}:3000/create-checkout-session-onetime`, {
+      const response = await fetch(API_CONFIG.buildUrl('/create-checkout-session-onetime'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -196,7 +197,7 @@ export function PaidPlans() {
   const issueSimulationTokens = async (tokensAmount) => {
     try {
       const token = localStorage.getItem('auth_token');
-      const response = await fetch(`https://${window.location.hostname}:3000/api/issueSimulationTokens`, {
+      const response = await fetch(API_CONFIG.buildApiUrl('/issueSimulationTokens'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
