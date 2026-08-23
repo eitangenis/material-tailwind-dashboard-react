@@ -230,7 +230,9 @@
             try {
                 await viewer.loadStructureFromUrl(
                     `https://files.rcsb.org/download/${pdbId.toUpperCase()}.pdb`,
-                    'pdb'
+                    'pdb',
+                    false,
+                    { label: `PDB ${pdbId.toUpperCase()}` }
                 );
                 showStatus(`Successfully loaded PDB structure: ${pdbId.toUpperCase()}`, 'success');
             } catch (error) {
@@ -338,12 +340,16 @@
                     return;
                 }
                 
-                const { url, format } = event.data;
+                const { url, format, label } = event.data;
+                const structureLabel = label
+                    || (typeof url === 'string' && /\/download\/([A-Za-z0-9]+)(?:\.pdb)?/i.test(url)
+                        ? `PDB ${url.match(/\/download\/([A-Za-z0-9]+)(?:\.pdb)?/i)[1].toUpperCase()}`
+                        : `${String(format || 'structure').toUpperCase()} structure`);
                 
                 showLoading(true);
                 
                 try {
-                    await viewer.loadStructureFromUrl(url, format);
+                    await viewer.loadStructureFromUrl(url, format, false, { label: structureLabel });
                     showStatus(`Successfully loaded ${format.toUpperCase()} structure from API`, 'success');
                 } catch (error) {
                     console.error('Failed to load structure from URL:', error);
@@ -365,7 +371,7 @@
                     // Use a chemical structure service to convert SMILES to 3D structure
                     const sdfUrl = `https://cactus.nci.nih.gov/chemical/structure/${encodeURIComponent(smiles)}/sdf`;
                     
-                    await viewer.loadStructureFromUrl(sdfUrl, 'sdf');
+                    await viewer.loadStructureFromUrl(sdfUrl, 'sdf', false, { label: name || 'Ligand' });
                     showStatus(`Successfully loaded molecule: ${name || 'Unknown'} from SMILES`, 'success');
                     
                     // Send success message back to parent
@@ -380,7 +386,7 @@
                     // Try alternative approach using PubChem
                     try {
                         const pubchemUrl = `https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/smiles/${encodeURIComponent(smiles)}/SDF`;
-                        await viewer.loadStructureFromUrl(pubchemUrl, 'sdf');
+                        await viewer.loadStructureFromUrl(pubchemUrl, 'sdf', false, { label: name || 'Ligand' });
                         showStatus(`Successfully loaded molecule: ${name || 'Unknown'} from SMILES (PubChem)`, 'success');
                         
                         // Send success message back to parent

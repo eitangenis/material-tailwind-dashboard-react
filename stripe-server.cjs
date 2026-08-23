@@ -29,6 +29,78 @@ const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
 const app = express();
 
+// --- SMTP transport, 2026-07-29 -----------------------------------------------
+// The two routes below hardcoded smtp.titan.email:465. That is not this account's
+// provider: EMAIL_HOST in the .env is server028.yourhosting.nl and Titan rejects these
+// credentials with 535 on every port. Every contact-form submission has therefore
+// failed since the page shipped. Read the configured host instead.
+function _smtpConfig() {
+  const host = (process.env.EMAIL_HOST || '').trim();
+  const port = Number.parseInt(process.env.EMAIL_PORT || '587', 10);
+  if (!host) throw new Error('EMAIL_HOST is not configured');
+  return {
+    host,
+    port,
+    secure: port === 465,        // 465 is implicit TLS; 587/25 use STARTTLS
+    requireTLS: port !== 465,
+    auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASS },
+  };
+}
+// -----------------------------------------------------------------------------
+
+
+// --- hardened 2026-07-29 ---------------------------------------------------------------
+// Both mail routes below are public and hit a real SMTP account, so they get the same
+// budget this project's own server gives them (publicEmailRateLimit): 5 per 15 minutes
+// per IP. In-memory and per-process, exactly like server/index.js — no new dependency.
+const _mailHits = new Map();
+let _mailGlobal = [];
+
+// nginx sets X-Real-IP from $remote_addr and overwrites anything the caller sent, so it
+// is the only forwarded header here that can be trusted. X-Forwarded-For is built with
+// $proxy_add_x_forwarded_for, which appends to whatever the client supplied.
+function _clientKey(req) {
+  const real = req.headers['x-real-ip'];
+  if (typeof real === 'string' && real.trim()) return real.trim();
+  return (req.ip || req.connection?.remoteAddress || 'unknown').replace('::ffff:', '');
+}
+
+function mailRateLimit(req, res, next) {
+  const WINDOW_MS = 15 * 60 * 1000;
+  const PER_IP = 5;
+  const GLOBAL = 40;
+  const now = Date.now();
+  const fresh = (list) => list.filter((t) => now - t < WINDOW_MS);
+
+  _mailGlobal = fresh(_mailGlobal);
+  const key = _clientKey(req);
+  const hits = fresh(_mailHits.get(key) || []);
+
+  const over = hits.length >= PER_IP ? hits[0] : _mailGlobal.length >= GLOBAL ? _mailGlobal[0] : null;
+  if (over !== null) {
+    res.set('Retry-After', String(Math.ceil((WINDOW_MS - (now - over)) / 1000)));
+    return res.status(429).json({ success: false, error: 'Too many requests. Try again later.' });
+  }
+
+  hits.push(now);
+  _mailHits.set(key, hits);
+  _mailGlobal.push(now);
+  if (_mailHits.size > 5000) {
+    for (const [k, v] of _mailHits) if (!fresh(v).length) _mailHits.delete(k);
+  }
+  next();
+}
+
+// /api/test-email reported whether the mail credentials were set and printed
+// account-recovery steps. Diagnostics, not a public endpoint.
+function localOnly(req, res, next) {
+  const ip = (req.ip || '').replace('::ffff:', '');
+  if (ip === '127.0.0.1' || ip === '::1' || ip === 'localhost') return next();
+  return res.status(404).json({ error: 'Not found' });
+}
+// -----------------------------------------------------------------------------
+
+
 app.use(cors());
 app.use(express.json());
 
@@ -227,20 +299,11 @@ app.post('/api/issueSimulationTokens', async (req, res) => {
 });
 
 // Test email configuration endpoint
-app.get('/api/test-email', async (req, res) => {
+app.get('/api/test-email', localOnly, async (req, res) => {
   try {
     console.log('Testing Titan Mail configuration...');
     
-    // Official Titan Mail configuration
-    const config = {
-      host: 'smtp.titan.email',
-      port: 465,
-      secure: true, // SSL/TLS for port 465
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
-      }
-    };
+    const config = _smtpConfig();
 
     const transporter = nodemailer.createTransport(config);
     await transporter.verify();
@@ -248,7 +311,7 @@ app.get('/api/test-email', async (req, res) => {
     res.json({ 
       success: true, 
       message: 'Email configuration is working correctly!',
-      config: 'Titan Mail SSL 465'
+      config: `${process.env.EMAIL_HOST}:${process.env.EMAIL_PORT || 587}`
     });
     
   } catch (error) {
@@ -278,39 +341,47 @@ app.get('/api/test-email', async (req, res) => {
 });
 
 // Email sending endpoint
-app.post('/api/send-email', async (req, res) => {
+app.post('/api/send-email', mailRateLimit, async (req, res) => {
   try {
     const { name, subject, message, recipientEmail } = req.body;
 
     // Validate required fields
-    if (!name || !subject || !message || !recipientEmail) {
-      return res.status(400).json({ 
-        success: false, 
-        error: 'All fields including recipient email are required' 
+    if (!name || !subject || !message) {
+      return res.status(400).json({
+        success: false,
+        error: 'name, subject, and message are required'
       });
     }
 
-    // Official Titan Mail configuration from documentation
-    const config = {
-      host: 'smtp.titan.email',
-      port: 465,
-      secure: true, // SSL/TLS for port 465
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
-      }
-    };
+    // SECURITY: this endpoint is public (contact form) and reachable from the internet
+    // because Vite proxies /api here. The destination is therefore server-controlled and
+    // NOT taken from the request, so it cannot be used to send mail to arbitrary
+    // recipients through the production Titan Mail account. Any client-supplied
+    // recipientEmail is treated only as the visitor's own reply-to address and shown in
+    // the body. Identical to server/index.js:5783, so Release A changes nothing here.
+    const destination = process.env.CONTACT_RECIPIENT || process.env.EMAIL_USER;
+    if (!destination) {
+      console.error('send-email: no CONTACT_RECIPIENT/EMAIL_USER configured');
+      return res.status(500).json({ success: false, error: 'Email destination is not configured' });
+    }
+    const _emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const senderContact =
+      typeof recipientEmail === 'string' && _emailRe.test(recipientEmail.trim())
+        ? recipientEmail.trim()
+        : null;
+
+    const config = _smtpConfig();
 
     const transporter = nodemailer.createTransport(config);
 
     // Email content
     const mailOptions = {
       from: process.env.EMAIL_FROM,
-      to: recipientEmail,
+      to: destination,
       subject: `${subject}`,
       html: `
         <h2>Message from ${name}</h2>
-        <p><strong>From:</strong> ${name} (via ${process.env.EMAIL_FROM})</p>
+        <p><strong>From:</strong> ${name}${senderContact ? ` &lt;${senderContact}&gt;` : ''}</p>
         <p><strong>Subject:</strong> ${subject}</p>
         <p><strong>Message:</strong></p>
         <div style="background-color: #f5f5f5; padding: 15px; border-radius: 5px; margin: 10px 0;">
@@ -324,7 +395,7 @@ app.post('/api/send-email', async (req, res) => {
       text: `
         Message from ${name}
         
-        From: ${name} (via ${process.env.EMAIL_FROM})
+        From: ${name}${senderContact ? ` <${senderContact}>` : ''}
         Subject: ${subject}
         
         Message:

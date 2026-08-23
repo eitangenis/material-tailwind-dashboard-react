@@ -34,8 +34,15 @@ export default defineConfig({
   },
   server: {
     host:'0.0.0.0',
+    allowedHosts: ['app.pyxis-discovery.com', 'localhost', '127.0.0.1'],
     https: false,
     port: 5173,
+    // This legacy app is temporarily served by Vite in production. Internet scanners
+    // deliberately request nonexistent /@fs paths; Vite broadcasts those unrelated
+    // server errors to every connected visitor unless the development overlay is off.
+    hmr: {
+      overlay: false,
+    },
     headers: {
       'Content-Security-Policy': "script-src 'self' 'unsafe-eval' 'unsafe-inline' blob: data: https://js.stripe.com https://cdn.jsdelivr.net https://api.nepcha.com https://3dmol.csb.pitt.edu https://unpkg.com; worker-src 'self' blob: data:"
     },
@@ -52,7 +59,13 @@ export default defineConfig({
     fs: {
       strict: true,
       allow: ['.'],
-      deny: ['.git', '.git/**']
+      // server.fs.deny REPLACES Vite's defaults rather than extending them, and the
+      // defaults are what block .env. Overriding it with only the .git patterns therefore
+      // served https://app.pyxis-discovery.com/.env — in full, publicly — to anyone who
+      // asked. Restored here, .git kept. Secrets now live in
+      // /root/pyxis-secrets/stripe-server.env, outside this directory entirely; this is
+      // the second line of defence, not the first.
+      deny: ['.env', '.env.*', '*.{crt,pem,key}', 'custom.secret', '.git', '.git/**']
     }
   },
   build: {

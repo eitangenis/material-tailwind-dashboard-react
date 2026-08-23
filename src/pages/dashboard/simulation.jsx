@@ -772,6 +772,11 @@ export function Simulation() {
         localStorage.setItem('molstar_pdb_url', pdbUrl);
         localStorage.setItem('molstar_sdf_url', sdfUrl);
         localStorage.setItem('molstar_simulation_key', simResult.simulationKey);
+        if (simPdbId) {
+          localStorage.setItem('molstar_pdb_name', `PDB ${String(simPdbId).trim().toUpperCase()}`);
+        }
+        // Drop sticky share-link codes so they cannot outrank this run's receptor.
+        localStorage.removeItem('molstar_pdb_code');
         
         // Get existing simulation pairs dictionary or create new one
         let simulationPairs = {};
@@ -809,6 +814,10 @@ export function Simulation() {
       localStorage.setItem('diffdock_pdb_id', diffDockPdbId);
       localStorage.setItem('diffdock_ligand_id', diffDockLigandId);
       localStorage.setItem('diffdock_timestamp', new Date().toISOString());
+      if (diffDockPdbId) {
+        localStorage.setItem('molstar_pdb_name', `PDB ${String(diffDockPdbId).trim().toUpperCase()} · DiffDock`);
+      }
+      localStorage.removeItem('molstar_pdb_code');
       
       // Extract and store protein and ligand data for Molstar3D
       if (diffDockResult.protein) {

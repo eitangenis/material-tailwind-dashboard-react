@@ -371,8 +371,10 @@ export function Molstar3D() {
 
     console.log('localStorage URLs:', { pdbUrl, sdfUrl, simulationKey, pdbCode });
 
-    // If we have a PDB code, always use RCSB URL
-    if (pdbCode) {
+    // Only fall back to RCSB when this view has no PDB of its own.
+    // A sticky molstar_pdb_code from an old ?pdb=1cx7 share link used to
+    // always win and force every later docking result back to 1cx7.
+    if (pdbCode && !pdbUrl) {
       const newPdbUrl = `https://files.rcsb.org/download/${pdbCode}.pdb`;
       console.log('Rebuilding PDB URL from RCSB:', pdbCode, '->', newPdbUrl);
       localStorage.setItem('molstar_pdb_url', newPdbUrl);
@@ -427,7 +429,8 @@ export function Molstar3D() {
         target.postMessage({
           type: 'loadStructureFromUrl',
           url: diffdockProteinUrl,
-          format: 'pdb'
+          format: 'pdb',
+          label: structureLabelForUrl(diffdockProteinUrl, 'pdb')
         }, '*');
       }
       if (diffdockLigandPositionUrl) {
@@ -437,7 +440,8 @@ export function Molstar3D() {
           target.postMessage({
             type: 'loadStructureFromUrl',
             url: diffdockLigandPositionUrl,
-            format: 'mol'
+            format: 'mol',
+            label: structureLabelForUrl(diffdockLigandPositionUrl, 'mol')
           }, '*');
         }, 500);
       }
@@ -462,7 +466,8 @@ export function Molstar3D() {
       target.postMessage({
         type: 'loadStructureFromUrl',
         url: pdbUrl,
-        format: 'pdb'
+        format: 'pdb',
+        label: structureLabelForUrl(pdbUrl, 'pdb')
       }, '*');
       setTimeout(() => {
         if (molstarRef.current && molstarRef.current.contentWindow) {
@@ -508,6 +513,22 @@ export function Molstar3D() {
     };
   }, []);
 
+
+  const structureLabelForUrl = (url, format = 'pdb') => {
+    const stored = localStorage.getItem('molstar_pdb_name');
+    if (stored) return stored;
+    const rcsb = String(url || '').match(/\/download\/([A-Za-z0-9]+)/i);
+    if (rcsb) return `PDB ${rcsb[1].toUpperCase()}`;
+    const diffdock = String(localStorage.getItem('diffdock_pdb_id') || '').trim();
+    if (diffdock && format === 'pdb') return `PDB ${diffdock.toUpperCase()}`;
+    if (format === 'sdf' || format === 'mol') {
+      const ligand = localStorage.getItem('diffdock_ligand_input') || localStorage.getItem('diffdock_ligand_id');
+      return ligand ? `Ligand ${ligand}` : 'Docking pose';
+    }
+    const simKey = localStorage.getItem('molstar_simulation_key');
+    return simKey ? `Simulation result · ${simKey}` : 'Protein structure';
+  };
+
   const handleBackToSimulation = () => {
     navigate('/dashboard/simulation');
   };
@@ -516,8 +537,8 @@ export function Molstar3D() {
     let pdbUrl = localStorage.getItem('molstar_pdb_url');
     const pdbCode = localStorage.getItem('molstar_pdb_code');
     
-    // If we have a PDB code, always use RCSB URL
-    if (pdbCode) {
+    // Only use a share-link PDB code when there is no current run URL.
+    if (pdbCode && !pdbUrl) {
       const newPdbUrl = `https://files.rcsb.org/download/${pdbCode}.pdb`;
       console.log('Loading PDB from RCSB:', newPdbUrl);
       localStorage.setItem('molstar_pdb_url', newPdbUrl);
@@ -529,7 +550,8 @@ export function Molstar3D() {
       molstarRef.current.contentWindow.postMessage({
         type: 'loadStructureFromUrl',
         url: pdbUrl,
-        format: 'pdb'
+        format: 'pdb',
+        label: structureLabelForUrl(pdbUrl, 'pdb')
       }, '*');
     setTimeout(() => {
               if (molstarRef.current && molstarRef.current.contentWindow) {
